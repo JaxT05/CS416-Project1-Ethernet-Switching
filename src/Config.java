@@ -1,4 +1,7 @@
-public record Config(String port, String IP) {
+
+
+public record Config(String PORT, String IP, String PATH) {
 
 }
+
 
