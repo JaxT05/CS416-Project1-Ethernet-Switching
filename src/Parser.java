@@ -8,7 +8,7 @@ public class Parser {
     static String ID = "";
     static HashMap<String, Config> configInfo = new HashMap<>();
     static HashMap<String, String> findPartner = new HashMap<>();
-    static String configFile = "C:\\Users\\YMMSW\\IdeaProjects\\CS416-Project1-Ethernet-Switching\\src\\config1.txt";
+    static String configFile = "src/config1.txt";
 
     static HashMap<String, Config> getConfigInfo() {
         try {
@@ -49,7 +49,7 @@ public class Parser {
                 String[] pseudoID = EachLine.split("@");
                 String ID = pseudoID[0];
                 String [] NearBY =  pseudoID[1].split(";");
-                findNearby =  Arrays.toString(NearBY);
+                findNearby =  Arrays.toString(NearBY).trim();
                 findPartner.put(ID, findNearby);
             }
 
