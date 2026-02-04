@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class Parser {
-    static String configFile = "C:\\Users\\YMMSW\\IdeaProjects\\TestRun\\src\\config";
+    static String configFile = "./src/config";
     static HashMap<String,Config> ConfigInfo = new HashMap<String,Config>();
-
+    static HashMap<String, Config> NeighInfo = new HashMap<>();
     static HashMap<String, Config> getConfigInfo() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(configFile));
@@ -17,7 +17,18 @@ public class Parser {
                 String PORT = values[1];
                 String IP =  values[2];
                 String PATH =  values[3];
-                ConfigInfo.put(ID,new Config(PORT,IP, PATH));
+                String [] ArrayPID = PATH.split(" ");
+                String PID = "";
+                for (int i = 0; i < ArrayPID.length; i++){
+                    PID = ArrayPID[i];
+                    NeighInfo.put(PID,   );
+
+                }
+                Config CPID = ConfigInfo.get(PID);
+
+
+                ConfigInfo.put(ID,new Config(PORT,IP, CPID));
+
 
             }
             reader.close();
