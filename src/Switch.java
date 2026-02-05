@@ -19,7 +19,6 @@ public class Switch {
             String neighborConfig = nearestNeighbors.get(neighbor);
             nearestPorts.add(neighborConfig);
         }
-        System.out.println(nearestPorts);
 
         int switchPort = Integer.parseInt(args[1]);
         DatagramSocket incomingSocket = new DatagramSocket(switchPort);
@@ -61,15 +60,17 @@ public class Switch {
                 destinationPort
         );
         outgoingSocket.send(forward);
+        outgoingSocket.close();
     }
 
     public static void floodPorts(ArrayList<String> portList, Integer sourcePort, String frame) throws Exception {
         for (String port : portList) {
             String[] portArray = port.split(" ");
+            System.out.println(STR."port array:\{Arrays.toString(portArray)}");
             InetAddress destinationIP = InetAddress.getByName(portArray[0]);
             int destinationPort = Integer.parseInt(portArray[1]);
-            if (!port.equalsIgnoreCase(String.valueOf(sourcePort))) {
-                DatagramSocket outgoingSocket = new DatagramSocket(Integer.parseInt(port));
+            if (destinationPort != sourcePort) {
+                DatagramSocket outgoingSocket = new DatagramSocket();
                 DatagramPacket forward = new DatagramPacket(
                         frame.getBytes(),
                         frame.getBytes().length,
@@ -77,6 +78,7 @@ public class Switch {
                         destinationPort
                 );
                 outgoingSocket.send(forward);
+                outgoingSocket.close();
             }
         }
     }

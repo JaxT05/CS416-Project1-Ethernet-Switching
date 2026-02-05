@@ -7,7 +7,6 @@ import java.util.Scanner;
 
 public class Host {
     public static void main(String[] args) throws Exception {
-
         //run the parser to figure out neighbors'
         Scanner scanner = new Scanner(System.in);
         System.out.print("ID: ");
@@ -52,6 +51,7 @@ public class Host {
                 sendFrame(hostSocket, nextDest, frame);
             }
         }
+        hostSocket.close();
     }
 
     public static void receiveFrame(DatagramSocket hostSocket, String ID) throws IOException {
