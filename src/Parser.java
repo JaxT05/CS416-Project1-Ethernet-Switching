@@ -38,24 +38,25 @@ public class Parser {
                         pID = pValue[0];
                         pPORT = pValue[1];
                         pIP = pValue[2];
-                        PathValue.append("Path: ").append(pID).append(":");
-                        PathValue.append(pPORT).append(" ");
+                        PathValue.append(pID).append(":");
                         PathValue.append(pIP).append(" ");
+                        PathValue.append(pPORT).append(";");
                     }
                 }else {
                     pValue = eachLineValue.split("'");
                     pID = pValue[0];
-                    pPORT = pValue[1];
-                    pIP = pValue[2];
+                    pIP = pValue[1];
+                    pPORT = pValue[2];
                 }
 
+//                Since the device doesn't need to view its own IP, these are commented out
 
-                ConfigValue.append(ID).append(":");
-                ConfigValue.append(PORT).append(" ");
-                ConfigValue.append(IP).append(" ");
-                PathValue.append("Path: ").append(pID).append(":");
-                PathValue.append(pPORT).append(" ");
+//                ConfigValue.append(ID).append(":");
+//                ConfigValue.append(IP).append(" ");
+//                ConfigValue.append(PORT).append(";");
+                PathValue.append(pID).append(":");
                 PathValue.append(pIP).append(" ");
+                PathValue.append(pPORT).append(";");
                 PathInfo.put(pID, PathValue.toString());
                 String Carol = PathInfo.get(pID);
                 ConfigValue.append(Carol);
