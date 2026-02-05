@@ -13,7 +13,7 @@ public class Switch {
         String neighbors = Parser.getConfigInfo().get(ID);
 //        System.out.println(neighbors);
 
-        Map<String, String> nearestNeighbors = getNeighbors(neighbors);
+        Map<String, String> nearestNeighbors = Parser.getNeighbors(neighbors);
 
         for (String neighbor : nearestNeighbors.keySet()) {
             String neighborConfig = nearestNeighbors.get(neighbor);
@@ -23,35 +23,36 @@ public class Switch {
 
         int switchPort = Integer.parseInt(args[1]);
         DatagramSocket incomingSocket = new DatagramSocket(switchPort);
-        DatagramPacket request = new DatagramPacket(new byte[1024], 1024);
+        DatagramPacket incomingPacket = new DatagramPacket(new byte[1024], 1024);
 
         //have a port open and listening
         while (true) {
-            incomingSocket.receive(request);
-            InetAddress destinationIP;
-            int destinationPort;
-            byte[] content = Arrays.copyOf(request.getData(), request.getLength());
+            incomingSocket.receive(incomingPacket);
+            byte[] content = Arrays.copyOf(incomingPacket.getData(), incomingPacket.getLength());
             String message = new String(content);
+            String[] frameContents = message.split(":");
+            String sourceDeviceID = frameContents[0];
+            String destinationDeviceID = frameContents[1];
 
-            // if dest device is recognizable in the addressTable array, send frame to that port
-            for (String address : addressTable.keySet()) {
-                if (address.equalsIgnoreCase(destinationDevice)) {
-                    forwardFrame(destinationDevice, address, message);
-                }
-                // otherwise, add the address to the table and flood every port
-                else {
-                    floodPorts(nearestPorts, switchPort, message);
-                    addressTable.put(destinationDevice);
-                    // print the table once an address is added
-                    printAddressTable(ID, addressTable);
-                }
+            String sourceDeviceConfig = findNeighbor(sourceDeviceID, nearestNeighbors);
+            String destinationDeviceConfig = findNeighbor(destinationDeviceID, addressTable);
+
+            if (!addressTable.containsKey(sourceDeviceID)) {
+                addressTable.put(sourceDeviceID, sourceDeviceConfig);
+                printAddressTable(ID, addressTable);
             }
-
+            if (addressTable.containsKey(destinationDeviceID)) {
+                forwardFrame(destinationDeviceConfig, message);
+            } else {
+                floodPorts(nearestPorts, switchPort, message);
+            }
         }
     }
-    public static void forwardFrame(String destinationDevice, String address, String message) throws Exception {
-        InetAddress destinationIP = InetAddress.getByName("");
-        int destinationPort = 3000;
+
+    public static void forwardFrame(String destinationDeviceConfig, String message) throws Exception {
+        String[] destinationDeviceConfigArray = destinationDeviceConfig.split(" ");
+        InetAddress destinationIP = InetAddress.getByName(destinationDeviceConfigArray[0]);
+        int destinationPort = Integer.parseInt(destinationDeviceConfigArray[1]);
         DatagramSocket outgoingSocket = new DatagramSocket(destinationPort);
         DatagramPacket forward = new DatagramPacket(
                 message.getBytes(),
@@ -61,34 +62,35 @@ public class Switch {
         );
         outgoingSocket.send(forward);
     }
+
     public static void floodPorts(ArrayList<String> portList, Integer sourcePort, String message) throws Exception {
         for (String port : portList) {
+            String[] portArray = port.split(" ");
+            InetAddress destinationIP = InetAddress.getByName(portArray[0]);
+            int destinationPort = Integer.parseInt(portArray[1]);
             if (!port.equalsIgnoreCase(String.valueOf(sourcePort))) {
                 DatagramSocket outgoingSocket = new DatagramSocket(Integer.parseInt(port));
                 DatagramPacket forward = new DatagramPacket(
                         message.getBytes(),
                         message.getBytes().length,
                         destinationIP,
-                        port
+                        destinationPort
                 );
                 outgoingSocket.send(forward);
             }
         }
     }
+
     public static void printAddressTable(String ID, HashMap<String, String> addressTable) {
         System.out.printf("--Table for %s--\n", ID);
         System.out.println(addressTable);
     }
-    public static Map<String, String> getNeighbors (String neighbors) {
-        Map<String, String> nearestNeighbors = new HashMap<>();
-        String[] neighborConfigs = neighbors.split(";");
-        for (String neighborConfig : neighborConfigs) {
-            String[] neighbor = neighborConfig.split(":");
-            if (neighbor.length == 2) {
-                nearestNeighbors.put(neighbor[0].trim(), neighbor[1].trim());
-            }
+
+    public static String findNeighbor(String sourceDeviceID, Map<String, String> nearestNeighbors) {
+        String neighborInformation = "";
+        if (nearestNeighbors.containsKey(sourceDeviceID)) {
+            neighborInformation = nearestNeighbors.get(sourceDeviceID);
         }
-        System.out.println(nearestNeighbors);
-        return nearestNeighbors;
+        return neighborInformation;
     }
 }
