@@ -2,11 +2,18 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Parser {
     static String configFile = "src/config";
     static HashMap<String, String> ConfigInfo = new HashMap<>();
     static HashMap<String, String> PathInfo = new HashMap<>();
+
+    public static Map<String,String> returnNeighbors (String ID) {
+        String neighborConfig = getConfigInfo().get(ID);
+        Map <String, String> nearestNeighbors = getNeighbors(neighborConfig);
+        return nearestNeighbors;
+    }
 
     public static HashMap<String, String> getConfigInfo() {
         try {
@@ -33,29 +40,30 @@ public class Parser {
 
                 if( eachLineValue.toString().contains("-")) {
                     String[] withinEachLine = eachLineValue.split("-");
-                    for  (int i = 0; i < withinEachLine.length; i++) {
+                    for  (int i = 0; i < (withinEachLine.length); i++) {
                         pValue = withinEachLine[i].split("'");
                         pID = pValue[0];
                         pPORT = pValue[1];
                         pIP = pValue[2];
-                        PathValue.append("Path: ").append(pID).append(":");
-                        PathValue.append(pPORT).append(" ");
+                        PathValue.append(pID).append(":");
                         PathValue.append(pIP).append(" ");
+                        PathValue.append(pPORT).append(";").append(" ");
                     }
                 }else {
                     pValue = eachLineValue.split("'");
                     pID = pValue[0];
-                    pPORT = pValue[1];
-                    pIP = pValue[2];
+                    pIP = pValue[1];
+                    pPORT = pValue[2];
+                    PathValue.append(pID).append(":");
+                    PathValue.append(pIP).append(" ");
+                    PathValue.append(pPORT).append(";").append(" ");
                 }
 
+//                Since the device doesn't need to view its own IP, these are commented out
+//                ConfigValue.append(ID).append(":");
+//                ConfigValue.append(IP).append(" ");
+//                ConfigValue.append(PORT).append(";");
 
-                ConfigValue.append(ID).append(":");
-                ConfigValue.append(PORT).append(" ");
-                ConfigValue.append(IP).append(" ");
-                PathValue.append("Path: ").append(pID).append(":");
-                PathValue.append(pPORT).append(" ");
-                PathValue.append(pIP).append(" ");
                 PathInfo.put(pID, PathValue.toString());
                 String Carol = PathInfo.get(pID);
                 ConfigValue.append(Carol);
@@ -67,5 +75,15 @@ public class Parser {
             throw new RuntimeException(e);
         }
     }
-
+    public static Map<String, String> getNeighbors (String neighbors) {
+        Map<String, String> nearestNeighbors = new HashMap<>();
+        String[] neighborConfigs = neighbors.split(";");
+        for (String neighborConfig : neighborConfigs) {
+            String[] neighbor = neighborConfig.split(":");
+            if (neighbor.length == 2) {
+                nearestNeighbors.put(neighbor[0].trim(), neighbor[1].trim());
+            }
+        }
+        return nearestNeighbors;
+    }
 }
