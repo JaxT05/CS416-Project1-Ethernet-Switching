@@ -46,7 +46,7 @@ public class Host {
             String nextDest = nearestPorts.getFirst();
 
 //            InetAddress ip = InetAddress.getByName("");
-            String frame = STR."\{ID}:\{destination}:\{message}";
+            String frame = ID+ ":"+ destination  + ":" + message;
             if(!hostNeighbors.contains(destination)){
                 sendFrame(hostSocket, nextDest, frame);
             }
