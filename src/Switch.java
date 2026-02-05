@@ -28,8 +28,9 @@ public class Switch {
         //have a port open and listening
         while (true) {
             incomingSocket.receive(incomingPacket);
-            String message = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
-            String[] frameContents = message.split(":");
+            String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
+
+            String[] frameContents = frame.split(":");
             String sourceDeviceID = frameContents[0];
             String destinationDeviceID = frameContents[1];
 
@@ -41,28 +42,28 @@ public class Switch {
                 printAddressTable(ID, addressTable);
             }
             if (addressTable.containsKey(destinationDeviceID)) {
-                forwardFrame(destinationDeviceConfig, message);
+                forwardFrame(destinationDeviceConfig, frame);
             } else {
-                floodPorts(nearestPorts, switchPort, message);
+                floodPorts(nearestPorts, switchPort, frame);
             }
         }
     }
 
-    public static void forwardFrame(String destinationDeviceConfig, String message) throws Exception {
+    public static void forwardFrame(String destinationDeviceConfig, String frame) throws Exception {
         String[] destinationDeviceConfigArray = destinationDeviceConfig.split(" ");
         InetAddress destinationIP = InetAddress.getByName(destinationDeviceConfigArray[0]);
         int destinationPort = Integer.parseInt(destinationDeviceConfigArray[1]);
         DatagramSocket outgoingSocket = new DatagramSocket(destinationPort);
         DatagramPacket forward = new DatagramPacket(
-                message.getBytes(),
-                message.getBytes().length,
+                frame.getBytes(),
+                frame.getBytes().length,
                 destinationIP,
                 destinationPort
         );
         outgoingSocket.send(forward);
     }
 
-    public static void floodPorts(ArrayList<String> portList, Integer sourcePort, String message) throws Exception {
+    public static void floodPorts(ArrayList<String> portList, Integer sourcePort, String frame) throws Exception {
         for (String port : portList) {
             String[] portArray = port.split(" ");
             InetAddress destinationIP = InetAddress.getByName(portArray[0]);
@@ -70,8 +71,8 @@ public class Switch {
             if (!port.equalsIgnoreCase(String.valueOf(sourcePort))) {
                 DatagramSocket outgoingSocket = new DatagramSocket(Integer.parseInt(port));
                 DatagramPacket forward = new DatagramPacket(
-                        message.getBytes(),
-                        message.getBytes().length,
+                        frame.getBytes(),
+                        frame.getBytes().length,
                         destinationIP,
                         destinationPort
                 );
