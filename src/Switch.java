@@ -5,6 +5,8 @@ import java.util.*;
 
 public class Switch {
     public static void main(String[] args) throws Exception {
+        System.out.println(args[0]);
+        System.out.println(args[1]);
         HashMap<String, String> addressTable = new HashMap<>();
         ArrayList<String> nearestPorts = new ArrayList<>();
         Scanner inputReader = new Scanner(System.in);
@@ -29,10 +31,15 @@ public class Switch {
         while (true) {
             incomingSocket.receive(incomingPacket);
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
+            System.out.println(frame);
 
             String[] frameContents = frame.split(":");
             String sourceDeviceID = frameContents[0];
+            for (String framePiece : frameContents) {
+                System.out.println(framePiece);
+            }
             String destinationDeviceID = frameContents[1];
+
 
             String sourceDeviceConfig = findNeighbor(sourceDeviceID, nearestNeighbors);
             String destinationDeviceConfig = findNeighbor(destinationDeviceID, addressTable);
@@ -61,6 +68,7 @@ public class Switch {
                 destinationPort
         );
         outgoingSocket.send(forward);
+        outgoingSocket.close();
     }
 
     public static void floodPorts(ArrayList<String> portList, Integer sourcePort, String frame) throws Exception {
@@ -68,8 +76,8 @@ public class Switch {
             String[] portArray = port.split(" ");
             InetAddress destinationIP = InetAddress.getByName(portArray[0]);
             int destinationPort = Integer.parseInt(portArray[1]);
-            if (!port.equalsIgnoreCase(String.valueOf(sourcePort))) {
-                DatagramSocket outgoingSocket = new DatagramSocket(Integer.parseInt(port));
+            if (destinationPort != sourcePort) {
+                DatagramSocket outgoingSocket = new DatagramSocket(destinationPort);
                 DatagramPacket forward = new DatagramPacket(
                         frame.getBytes(),
                         frame.getBytes().length,
@@ -77,6 +85,7 @@ public class Switch {
                         destinationPort
                 );
                 outgoingSocket.send(forward);
+                outgoingSocket.close();
             }
         }
     }

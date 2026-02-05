@@ -11,8 +11,7 @@ public class Parser {
 
     public static Map<String,String> returnNeighbors (String ID) {
         String neighborConfig = getConfigInfo().get(ID);
-        Map <String, String> nearestNeighbors = getNeighbors(neighborConfig);
-        return nearestNeighbors;
+        return getNeighbors(neighborConfig);
     }
 
     public static HashMap<String, String> getConfigInfo() {
@@ -30,18 +29,18 @@ public class Parser {
                 String bPATH = line.split("_")[1];
                 String [] EachLine = bPATH.split("]");
                 String eachLineValue = "";
-                for (int i = 0; i < EachLine.length; i++) {
-                    eachLineValue = EachLine[i];
+                for (String string : EachLine) {
+                    eachLineValue = string;
                 }
                 String pID = "";
                 String[] pValue;
                 String pPORT = "";
                 String pIP = "";
 
-                if( eachLineValue.toString().contains("-")) {
+                if( eachLineValue.contains("-")) {
                     String[] withinEachLine = eachLineValue.split("-");
-                    for  (int i = 0; i < (withinEachLine.length); i++) {
-                        pValue = withinEachLine[i].split("'");
+                    for (String s : withinEachLine) {
+                        pValue = s.split("'");
                         pID = pValue[0];
                         pPORT = pValue[1];
                         pIP = pValue[2];
