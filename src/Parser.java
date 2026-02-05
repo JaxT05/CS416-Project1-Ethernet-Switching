@@ -84,8 +84,6 @@ public class Parser {
                 nearestNeighbors.put(neighbor[0].trim(), neighbor[1].trim());
             }
         }
-        System.out.println(nearestNeighbors);
         return nearestNeighbors;
     }
-
 }
