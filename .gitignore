@@ -27,3 +27,8 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/Ethernet-Switching.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/workspace.xml
