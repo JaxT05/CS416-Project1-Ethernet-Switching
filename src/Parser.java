@@ -2,11 +2,18 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Parser {
     static String configFile = "src/config";
     static HashMap<String, String> ConfigInfo = new HashMap<>();
     static HashMap<String, String> PathInfo = new HashMap<>();
+
+    public static Map<String,String> returnNeighbors (String ID) {
+        String neighborConfig = getConfigInfo().get(ID);
+        Map <String, String> nearestNeighbors = getNeighbors(neighborConfig);
+        return nearestNeighbors;
+    }
 
     public static HashMap<String, String> getConfigInfo() {
         try {
@@ -67,6 +74,18 @@ public class Parser {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    public static Map<String, String> getNeighbors (String neighbors) {
+        Map<String, String> nearestNeighbors = new HashMap<>();
+        String[] neighborConfigs = neighbors.split(";");
+        for (String neighborConfig : neighborConfigs) {
+            String[] neighbor = neighborConfig.split(":");
+            if (neighbor.length == 2) {
+                nearestNeighbors.put(neighbor[0].trim(), neighbor[1].trim());
+            }
+        }
+        System.out.println(nearestNeighbors);
+        return nearestNeighbors;
     }
 
 }
