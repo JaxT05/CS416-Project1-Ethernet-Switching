@@ -30,6 +30,7 @@ public class Switch {
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
 
             String[] frameContents = frame.split(":");
+            System.out.println(Arrays.toString(frameContents));
             String sourceDeviceID = frameContents[0];
             String destinationDeviceID = frameContents[1];
 
@@ -52,7 +53,8 @@ public class Switch {
         String[] destinationDeviceConfigArray = destinationDeviceConfig.split(" ");
         InetAddress destinationIP = InetAddress.getByName(destinationDeviceConfigArray[0]);
         int destinationPort = Integer.parseInt(destinationDeviceConfigArray[1]);
-        DatagramSocket outgoingSocket = new DatagramSocket(destinationPort);
+        System.out.println(destinationPort);
+        DatagramSocket outgoingSocket = new DatagramSocket();
         DatagramPacket forward = new DatagramPacket(
                 frame.getBytes(),
                 frame.getBytes().length,
