@@ -23,7 +23,6 @@ public class Switch {
         int switchPort = Integer.parseInt(args[1]);
         DatagramSocket incomingSocket = new DatagramSocket(switchPort);
         DatagramPacket incomingPacket = new DatagramPacket(new byte[1024], 1024);
-
         //have a port open and listening
         while (true) {
             incomingSocket.receive(incomingPacket);
