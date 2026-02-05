@@ -43,7 +43,7 @@ public class Switch {
             if (addressTable.containsKey(destinationDeviceID)) {
                 forwardFrame(destinationDeviceConfig, frame);
             } else {
-                floodPorts(nearestPorts, switchPort, frame);
+                floodPorts(nearestPorts, sourceDeviceConfig, frame);
             }
         }
     }
@@ -63,12 +63,16 @@ public class Switch {
         outgoingSocket.close();
     }
 
-    public static void floodPorts(ArrayList<String> portList, Integer sourcePort, String frame) throws Exception {
+    public static void floodPorts(ArrayList<String> portList, String sourceDeviceConfig, String frame) throws Exception {
+        String[] sourceDeviceConfigArray = sourceDeviceConfig.split(" ");
+        int sourcePort = Integer.parseInt(sourceDeviceConfigArray[1]);
         for (String port : portList) {
             String[] portArray = port.split(" ");
-            System.out.println(STR."port array:\{Arrays.toString(portArray)}");
+//            System.out.println("port array:" + Arrays.toString(portArray));
             InetAddress destinationIP = InetAddress.getByName(portArray[0]);
             int destinationPort = Integer.parseInt(portArray[1]);
+//            System.out.println(destinationPort);
+//            System.out.println(sourcePort);
             if (destinationPort != sourcePort) {
                 DatagramSocket outgoingSocket = new DatagramSocket();
                 DatagramPacket forward = new DatagramPacket(

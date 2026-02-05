@@ -65,7 +65,7 @@ public class Host {
             String destinationDeviceID = frameContents[1];
             String message = frameContents[2];
             if (destinationDeviceID.equalsIgnoreCase(ID)) {
-                System.out.printf("Message: %s, Source: %s\n", message, sourceDeviceID);
+                System.out.printf("%s, Source: %s\n", message, sourceDeviceID);
             }
             else {
                 System.out.println("MAC Address Mismatch");
