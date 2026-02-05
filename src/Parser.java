@@ -4,26 +4,68 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class Parser {
-    static String configFile = "C:\\Users\\YMMSW\\IdeaProjects\\TestRun\\src\\config";
-    static HashMap<String,Config> ConfigInfo = new HashMap<String,Config>();
+    static String configFile = "src/config";
+    static HashMap<String, String> ConfigInfo = new HashMap<>();
+    static HashMap<String, String> PathInfo = new HashMap<>();
 
-    static HashMap<String, Config> getConfigInfo() {
+    public static HashMap<String, String> getConfigInfo() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(configFile));
             String line;
             while ((line = reader.readLine()) != null) {
-                String [] values = line.split(",");
+                StringBuilder ConfigValue = new StringBuilder();
+                StringBuilder PathValue = new StringBuilder();
+                String bValues = line.split("_")[0];
+                String [] values = bValues.split(",");
                 String ID = values[0];
                 String PORT = values[1];
                 String IP =  values[2];
-                String PATH =  values[3];
-                ConfigInfo.put(ID,new Config(PORT,IP, PATH));
+                String bPATH = line.split("_")[1];
+                String [] EachLine = bPATH.split("]");
+                String eachLineValue = "";
+                for (int i = 0; i < EachLine.length; i++) {
+                    eachLineValue = EachLine[i];
+                }
+                String pID = "";
+                String[] pValue;
+                String pPORT = "";
+                String pIP = "";
 
+                if( eachLineValue.toString().contains("-")) {
+                    String[] withinEachLine = eachLineValue.split("-");
+                    for  (int i = 0; i < withinEachLine.length; i++) {
+                        pValue = withinEachLine[i].split("'");
+                        pID = pValue[0];
+                        pPORT = pValue[1];
+                        pIP = pValue[2];
+                        PathValue.append("Path: ").append(pID).append(":");
+                        PathValue.append(pPORT).append(" ");
+                        PathValue.append(pIP).append(" ");
+                    }
+                }else {
+                    pValue = eachLineValue.split("'");
+                    pID = pValue[0];
+                    pPORT = pValue[1];
+                    pIP = pValue[2];
+                }
+
+
+                ConfigValue.append(ID).append(":");
+                ConfigValue.append(PORT).append(" ");
+                ConfigValue.append(IP).append(" ");
+                PathValue.append("Path: ").append(pID).append(":");
+                PathValue.append(pPORT).append(" ");
+                PathValue.append(pIP).append(" ");
+                PathInfo.put(pID, PathValue.toString());
+                String Carol = PathInfo.get(pID);
+                ConfigValue.append(Carol);
+                ConfigInfo.put(ID, ConfigValue.toString());
             }
             reader.close();
+            return ConfigInfo;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return ConfigInfo;
     }
+
 }
