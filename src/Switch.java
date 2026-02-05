@@ -28,8 +28,7 @@ public class Switch {
         //have a port open and listening
         while (true) {
             incomingSocket.receive(incomingPacket);
-            byte[] content = Arrays.copyOf(incomingPacket.getData(), incomingPacket.getLength());
-            String message = new String(content);
+            String message = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
             String[] frameContents = message.split(":");
             String sourceDeviceID = frameContents[0];
             String destinationDeviceID = frameContents[1];

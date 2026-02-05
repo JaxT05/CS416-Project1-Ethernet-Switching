@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -9,11 +10,19 @@ public class Host {
             //run the parser to figure out neighbors'
             Scanner scanner = new Scanner(System.in);
             System.out.print("ID: ");
-            String id = scanner.nextLine().trim();
-            Config hostConfig = Device.getConfig().get(id);
+            String ID = scanner.nextLine().trim();
+            ArrayList<String> nearestPorts = new ArrayList<>();
+            String neighbors = Parser.getConfigInfo().get(ID);
+     //   System.out.println(neighbors);
 
-            String hostNeighbors = Device.findNeighbors().get(id);
-            System.out.printf("Config: %s\nNeighbors: %s\n", hostConfig, hostNeighbors);
+            Map<String, String> nearestNeighbors = Parser.getNeighbors(neighbors);
+
+//            for (String neighbor : nearestNeighbors.keySet()) {
+//                String neighborConfig = nearestNeighbors.get(neighbor);
+//                nearestPorts.add(neighborConfig);
+//            }
+//            System.out.println(nearestPorts);
+
 
             System.out.print("Message: ");
             String message = scanner.nextLine().trim();
@@ -26,7 +35,7 @@ public class Host {
             int port = Integer.parseInt(args[1]);
             byte[] buf = message.getBytes();
             Packet packet = new Packet();
-            client.send(packet.udpPacket(buf, port, addr));
+//            client.send(packet.udpPacket(buf, port, addr));
         }
     }
 }
