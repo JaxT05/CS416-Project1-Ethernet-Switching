@@ -12,7 +12,7 @@ public class Host {
         System.out.print("ID: ");
         String ID = scanner.nextLine().trim();
         String hostNeighbors = Parser.getConfigInfo().get(ID);
-        System.out.println(hostNeighbors);
+//        System.out.println(hostNeighbors);
         int port = Integer.parseInt(args[1]);
         ArrayList<String> nearestPorts = new ArrayList<>();
         Map<String, String> nearestNeighbors = Parser.getNeighbors(hostNeighbors);
@@ -22,7 +22,7 @@ public class Host {
             String neighborConfig = nearestNeighbors.get(neighbor);
             nearestPorts.add(neighborConfig);
         }
-        System.out.println(nearestPorts);
+//        System.out.println(nearestPorts);
 
         //creates a singular separate thread instead of establishing a pool of threads
         new Thread(() -> {
@@ -75,7 +75,7 @@ public class Host {
 
     public static void sendFrame(DatagramSocket hostSocket, String nextDest, String frame) throws Exception {
         String[] nextDestArray = nextDest.split(" ");
-        System.out.println(Arrays.toString(nextDestArray));
+//        System.out.println(Arrays.toString(nextDestArray));
         InetAddress nextDestIP = InetAddress.getByName(nextDestArray[1]);
         int nextDestPort = Integer.parseInt(nextDestArray[0]);
         DatagramPacket outgoingPacket = new DatagramPacket(

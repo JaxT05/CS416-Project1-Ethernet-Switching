@@ -11,7 +11,6 @@ public class Switch {
         System.out.println("What is the ID of this switch?");
         String ID = inputReader.nextLine();
         String neighbors = Parser.getConfigInfo().get(ID);
-//        System.out.println(neighbors);
 
         Map<String, String> nearestNeighbors = Parser.getNeighbors(neighbors);
 
@@ -29,10 +28,9 @@ public class Switch {
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
 
             String[] frameContents = frame.split(":");
-            System.out.println(Arrays.toString(frameContents));
+//            System.out.println(Arrays.toString(frameContents));
             String sourceDeviceID;
             String destinationDeviceID;
-            String newFrame;
             String neighborID = frameContents[0];
 
             if (frameContents.length == 4) {
@@ -46,10 +44,10 @@ public class Switch {
                 destinationDeviceID = frameContents[1];
                 frame = ID +":"+ frame;
             }
-            System.out.println(frame);
+//            System.out.println(frame);
 
             String sourceDeviceConfig = findNeighbor(neighborID, nearestNeighbors);
-            System.out.println(neighborID);
+//            System.out.println(neighborID);
             String destinationDeviceConfig = findNeighbor(destinationDeviceID, addressTable);
 
             if (!addressTable.containsKey(sourceDeviceID)) {
@@ -68,7 +66,7 @@ public class Switch {
         String[] destinationDeviceConfigArray = destinationDeviceConfig.split(" ");
         InetAddress destinationIP = InetAddress.getByName(destinationDeviceConfigArray[0]);
         int destinationPort = Integer.parseInt(destinationDeviceConfigArray[1]);
-        System.out.println(destinationPort);
+//        System.out.println(destinationPort);
         DatagramSocket outgoingSocket = new DatagramSocket();
         DatagramPacket forward = new DatagramPacket(
                 frame.getBytes(),
