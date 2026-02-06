@@ -61,9 +61,9 @@ public class Host {
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
 
             String[] frameContents = frame.split(":");
-            String sourceDeviceID = frameContents[0];
-            String destinationDeviceID = frameContents[1];
-            String message = frameContents[2];
+            String sourceDeviceID = frameContents[1];
+            String destinationDeviceID = frameContents[2];
+            String message = frameContents[3];
             if (destinationDeviceID.equalsIgnoreCase(ID)) {
                 System.out.printf("%s, Source: %s\n", message, sourceDeviceID);
             }

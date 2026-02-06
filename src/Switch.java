@@ -30,10 +30,26 @@ public class Switch {
 
             String[] frameContents = frame.split(":");
             System.out.println(Arrays.toString(frameContents));
-            String sourceDeviceID = frameContents[0];
-            String destinationDeviceID = frameContents[1];
+            String sourceDeviceID;
+            String destinationDeviceID;
+            String newFrame;
+            String neighborID = frameContents[0];
 
-            String sourceDeviceConfig = findNeighbor(sourceDeviceID, nearestNeighbors);
+            if (frameContents.length == 4) {
+                sourceDeviceID = frameContents[1];
+                destinationDeviceID = frameContents[2];
+                frameContents[0] = ID;
+                frame = String.join(":", frameContents);
+            }
+            else {
+                sourceDeviceID = frameContents[0];
+                destinationDeviceID = frameContents[1];
+                frame = ID +":"+ frame;
+            }
+            System.out.println(frame);
+
+            String sourceDeviceConfig = findNeighbor(neighborID, nearestNeighbors);
+            System.out.println(neighborID);
             String destinationDeviceConfig = findNeighbor(destinationDeviceID, addressTable);
 
             if (!addressTable.containsKey(sourceDeviceID)) {
