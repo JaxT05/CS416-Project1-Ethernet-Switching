@@ -7,7 +7,7 @@ public class Parser {
     static String configFile = "src/config";
     static HashMap<String, String> ConfigInfo = new HashMap<>();
 
-    public static HashMap<String, String> getDevice() {
+    public static HashMap<String, String> getConfigInfo() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(configFile));
             String line;
