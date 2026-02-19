@@ -55,7 +55,7 @@ public class Parser {
                             String ANID = NIDArray[0];
                             String NPORT = NIDArray[1];
                             String NIP = NIDArray[2];
-                            Configure.append(ANID).append(": ").append(NPORT).append("; ").append(NIP).append("; ");
+                            Configure.append(ANID).append(": ").append(NIP).append("").append(NPORT).append("; ");
                         }
                     }
                     ConfigInfo.put(ID, String.valueOf(Configure));
@@ -75,7 +75,7 @@ public class Parser {
                             String ANID = NIDArray[0];
                             String NPORT = NIDArray[1];
                             String NIP = NIDArray[2];
-                            Configure.append(ANID).append(": ").append(NPORT).append("; ").append(NIP).append("; ");
+                            Configure.append(ANID).append(": ").append(NIP).append(" ").append(NPORT).append("; ");
                         }
                         ConfigInfo.put(ID, String.valueOf(Configure));
                     }
