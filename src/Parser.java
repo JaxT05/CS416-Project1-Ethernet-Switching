@@ -2,87 +2,80 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Parser {
     static String configFile = "src/config";
     static HashMap<String, String> ConfigInfo = new HashMap<>();
-    static HashMap<String, String> PathInfo = new HashMap<>();
 
-    public static Map<String,String> returnNeighbors (String ID) {
-        String neighborConfig = getConfigInfo().get(ID);
-        return getNeighbors(neighborConfig);
-    }
-
-    public static HashMap<String, String> getConfigInfo() {
+    public static HashMap<String, String> getDevice() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(configFile));
             String line;
             while ((line = reader.readLine()) != null) {
-                StringBuilder ConfigValue = new StringBuilder();
-                StringBuilder PathValue = new StringBuilder();
-                String bValues = line.split("_")[0];
-                String [] values = bValues.split(",");
-                String ID = values[0];
-                String PORT = values[1];
-                String IP =  values[2];
-                String bPATH = line.split("_")[1];
-                String [] EachLine = bPATH.split("]");
-                String eachLineValue = "";
-                for (String string : EachLine) {
-                    eachLineValue = string;
-                }
-                String pID = "";
-                String[] pValue;
-                String pPORT = "";
-                String pIP = "";
-
-                if( eachLineValue.contains("-")) {
-                    String[] withinEachLine = eachLineValue.split("-");
-                    for (String s : withinEachLine) {
-                        pValue = s.split("'");
-                        pID = pValue[0];
-                        pPORT = pValue[1];
-                        pIP = pValue[2];
-                        PathValue.append(pID).append(":");
-                        PathValue.append(pIP).append(" ");
-                        PathValue.append(pPORT).append(";").append(" ");
+                if (line.equals("Hosts")) {
+                    String ID = reader.readLine().trim();
+                    String IP = reader.readLine().trim();
+                    String PORT = reader.readLine().trim();
+                    String GatIP = reader.readLine().trim();
+                    String VirIP = reader.readLine().trim();
+                    String NID = reader.readLine().trim();
+                    StringBuilder Configure = new StringBuilder();
+                    Configure.append("Hosts: ").append(ID).append(" IP: ").append(IP).append(" PORT: ").append(PORT).append(" Gateway IP: ").append(GatIP).append(" Virtual IP: ").append(VirIP);
+                    if (reader.readLine().trim().equals("Neighbors")) {
+                        String[] NIDArray = NID.split(",");
+                        String ANID = NIDArray[0];
+                        String NPORT = NIDArray[1];
+                        String NIP = NIDArray[2];
+                        Configure.append(" Neighbor ID : ").append(ANID).append(" PORT: ").append(NPORT).append(" IP: ").append(NIP);
                     }
-                }else {
-                    pValue = eachLineValue.split("'");
-                    pID = pValue[0];
-                    pIP = pValue[1];
-                    pPORT = pValue[2];
-                    PathValue.append(pID).append(":");
-                    PathValue.append(pIP).append(" ");
-                    PathValue.append(pPORT).append(";").append(" ");
+                    ConfigInfo.put(ID, String.valueOf(Configure));
+                } else if (line.equals("Routers")) {
+                    String ID = reader.readLine().trim();
+                    String PORT = reader.readLine().trim();
+                    String IP = reader.readLine().trim();
+                    String GatIP = reader.readLine().trim();
+                    String GatIP2 = reader.readLine().trim();
+                    String VirIP = reader.readLine().trim();
+                    String NID = reader.readLine().trim();
+                    StringBuilder Configure = new StringBuilder();
+                    Configure.append("Hosts: ").append(ID).append(" IP: ").append(IP).append(" PORT: ").append(PORT).append(" Gateway IP: ").append(GatIP).append(" Gateway IP: ").append(GatIP2).append(" Virtual IP: ").append(VirIP);
+                    if (reader.readLine().trim().equals("Neighbors")) {
+                        String[] prepArray = NID.split(" ");
+                        for (int i = 0; i < prepArray.length; i++) {
+                            String[] NIDArray = prepArray[i].split(",");
+                            String ANID = NIDArray[0];
+                            String NPORT = NIDArray[1];
+                            String NIP = NIDArray[2];
+                            Configure.append(" Neighbor ID : ").append(ANID).append(" PORT: ").append(NPORT).append(" IP: ").append(NIP);
+                        }
+                    }
+                    ConfigInfo.put(ID, String.valueOf(Configure));
+                } else if (line.equals("Switch")) {
+                    String ID = reader.readLine().trim();
+                    String IP = reader.readLine().trim();
+                    String PORT = reader.readLine().trim();
+                    String NID = reader.readLine().trim();
+
+                    StringBuilder Configure = new StringBuilder();
+                    Configure.append("Hosts: ").append(ID).append(" IP: ").append(IP).append(" PORT: ").append(PORT);
+
+                    if (reader.readLine().trim().equals("Neighbors")) {
+                        String[] prepArray = NID.split(" ");
+                        for (int i = 0; i < prepArray.length; i++) {
+                            String[] NIDArray = prepArray[i].split(",");
+                            String ANID = NIDArray[0];
+                            String NPORT = NIDArray[1];
+                            String NIP = NIDArray[2];
+                            Configure.append(" Neighbor ID : ").append(ANID).append(" PORT: ").append(NPORT).append(" IP: ").append(NIP);
+
+                        }
+                        ConfigInfo.put(ID, String.valueOf(Configure));
+                    }
                 }
-
-//                Since the device doesn't need to view its own IP, these are commented out
-//                ConfigValue.append(ID).append(":");
-//                ConfigValue.append(IP).append(" ");
-//                ConfigValue.append(PORT).append(";");
-
-                PathInfo.put(pID, PathValue.toString());
-                String Carol = PathInfo.get(pID);
-                ConfigValue.append(Carol);
-                ConfigInfo.put(ID, ConfigValue.toString());
             }
-            reader.close();
-            return ConfigInfo;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    }
-    public static Map<String, String> getNeighbors (String neighbors) {
-        Map<String, String> nearestNeighbors = new HashMap<>();
-        String[] neighborConfigs = neighbors.split(";");
-        for (String neighborConfig : neighborConfigs) {
-            String[] neighbor = neighborConfig.split(":");
-            if (neighbor.length == 2) {
-                nearestNeighbors.put(neighbor[0].trim(), neighbor[1].trim());
-            }
-        }
-        return nearestNeighbors;
+        return ConfigInfo;
     }
 }
