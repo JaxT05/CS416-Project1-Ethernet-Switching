@@ -11,6 +11,15 @@ public class Parser {
     static Scanner scanner = new Scanner(System.in);
     static String ID;
 
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("ID: ");
+        String ID = scanner.nextLine().trim();
+        System.out.println(ID);
+        System.out.println(getConfigInfo().get(ID));
+
+    }
+
     public static Map<String,String> returnNeighbors (String ID) {
         String neighborConfig = getConfigInfo().get(ID);
         return getNeighbors(neighborConfig);
@@ -35,7 +44,7 @@ public class Parser {
                         String ANID = NIDArray[0];
                         String NPORT = NIDArray[1];
                         String NIP = NIDArray[2];
-                        Configure.append(ANID).append(": ").append(NPORT).append("; ").append(NIP).append("; ");
+                        Configure.append(ANID).append(": ").append(NIP).append(" ").append(NPORT).append("; ");
                     }
                     ConfigInfo.put(ID, String.valueOf(Configure));
                 } else if (line.equals("Routers")) {
@@ -55,7 +64,7 @@ public class Parser {
                             String ANID = NIDArray[0];
                             String NPORT = NIDArray[1];
                             String NIP = NIDArray[2];
-                            Configure.append(ANID).append(": ").append(NIP).append("").append(NPORT).append("; ");
+                            Configure.append(ANID).append(": ").append(NIP).append(" ").append(NPORT).append("; ");
                         }
                     }
                     ConfigInfo.put(ID, String.valueOf(Configure));
@@ -97,7 +106,4 @@ public class Parser {
         }
         return nearestNeighbors;
     }
-
-
-
 }
