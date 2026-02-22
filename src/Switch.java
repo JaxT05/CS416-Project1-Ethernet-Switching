@@ -11,10 +11,8 @@ public class Switch {
         System.out.println("What is the ID of this switch?");
         String ID = inputReader.nextLine();
         String config = Parser.getConfigInfo().get(ID);
-//        System.out.println(neighbors);
 
         Map<String, String> nearestNeighbors = Parser.getNeighbors(config);
-        System.out.println(nearestNeighbors);
 
         for (String neighbor : nearestNeighbors.keySet()) {
             String neighborConfig = nearestNeighbors.get(neighbor);
@@ -30,30 +28,32 @@ public class Switch {
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
 
             String[] frameContents = frame.split(":");
-//            System.out.println(Arrays.toString(frameContents));
             String sourceDeviceID;
             String destinationDeviceID;
-            String neighborID = frameContents[0];
+            String neighborID;
+            String addressTableID;
 
-            if (frameContents.length == 4) {
+            if (frameContents.length == 6) {
                 sourceDeviceID = frameContents[1];
+                addressTableID = frameContents[3].split("\\.")[1];
+                neighborID = frameContents[1];
                 destinationDeviceID = frameContents[2];
                 frameContents[0] = ID;
                 frame = String.join(":", frameContents);
             }
             else {
+                neighborID = frameContents[0];
                 sourceDeviceID = frameContents[0];
+                addressTableID = frameContents[2].split("\\.")[1];
                 destinationDeviceID = frameContents[1];
                 frame = ID +":"+ frame;
             }
-//            System.out.println(frame);
 
             String sourceDeviceConfig = findNeighbor(neighborID, nearestNeighbors);
-//            System.out.println(neighborID);
             String destinationDeviceConfig = findNeighbor(destinationDeviceID, addressTable);
 
-            if (!addressTable.containsKey(sourceDeviceID)) {
-                addressTable.put(sourceDeviceID, sourceDeviceConfig);
+            if (!addressTable.containsKey(addressTableID)) {
+                addressTable.put(addressTableID, sourceDeviceConfig);
                 printAddressTable(ID, addressTable);
             }
             if (addressTable.containsKey(destinationDeviceID)) {
@@ -68,7 +68,6 @@ public class Switch {
         String[] destinationDeviceConfigArray = destinationDeviceConfig.split(" ");
         InetAddress destinationIP = InetAddress.getByName(destinationDeviceConfigArray[0]);
         int destinationPort = Integer.parseInt(destinationDeviceConfigArray[1]);
-//        System.out.println(destinationPort);
         DatagramSocket outgoingSocket = new DatagramSocket();
         DatagramPacket forward = new DatagramPacket(
                 frame.getBytes(),
@@ -85,11 +84,8 @@ public class Switch {
         int sourcePort = Integer.parseInt(sourceDeviceConfigArray[1]);
         for (String port : portList) {
             String[] portArray = port.split(" ");
-//            System.out.println("port array:" + Arrays.toString(portArray));
             InetAddress destinationIP = InetAddress.getByName(portArray[0]);
             int destinationPort = Integer.parseInt(portArray[1]);
-//            System.out.println(destinationPort);
-//            System.out.println(sourcePort);
             if (destinationPort != sourcePort) {
                 DatagramSocket outgoingSocket = new DatagramSocket();
                 DatagramPacket forward = new DatagramPacket(
@@ -105,8 +101,10 @@ public class Switch {
     }
 
     public static void printAddressTable(String ID, HashMap<String, String> addressTable) {
-        System.out.printf("--Table for %s--\n", ID);
-        System.out.println(addressTable);
+        System.out.printf("----Table for %s----\n", ID);
+        for (Map.Entry<String, String> address : addressTable.entrySet()) {
+            System.out.println((address.getKey() + ", "  + address.getValue()));
+        }
     }
 
     public static String findNeighbor(String sourceDeviceID, Map<String, String> nearestNeighbors) {
