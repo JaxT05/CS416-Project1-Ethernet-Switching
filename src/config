@@ -22,7 +22,7 @@ Hosts
 C
 5000
 127.0.0.1
-net2.R2
+net3.R2
 net3.C
 S2,8000,127.0.0.1
 Neighbors
@@ -31,7 +31,7 @@ Hosts
 D
 6000
 127.0.0.1
-net2.R2
+net3.R2
 net3.D
 S2,8000,127.0.0.1
 Neighbors
@@ -53,9 +53,7 @@ R2
 127.0.0.1
 net2.R2
 net3.R2
-R1,9000,127.0.0.1,net1:R1,net2:R2,net3:R2
-Neighbors
-S2,8000,127.0.0.1
+R1,9000,127.0.0.1,net1:R1,net2:R2,net3:R2 S2,8000,127.0.0.1
 Neighbors
 
 Switch
