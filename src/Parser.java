@@ -1,6 +1,5 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -11,19 +10,10 @@ public class Parser {
     static Scanner scanner = new Scanner(System.in);
     static String ID;
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("ID: ");
-        String ID = scanner.nextLine().trim();
-        System.out.println(ID);
-        System.out.println(getConfigInfo().get(ID));
-
-    }
-
-    public static Map<String,String> returnNeighbors (String ID) {
-        String neighborConfig = getConfigInfo().get(ID);
-        return getNeighbors(neighborConfig);
-    }
+//    public static Map<String,String> returnNeighbors (String ID) {
+//        String neighborConfig = getConfigInfo().get(ID);
+//        return getNeighbors(neighborConfig);
+//    }
 
     public static HashMap<String, String> getConfigInfo() {
         try {
@@ -38,7 +28,8 @@ public class Parser {
                     String VirIP = reader.readLine().trim();
                     String NID = reader.readLine().trim();
                     StringBuilder Configure = new StringBuilder();
-                    //Configure.append("Hosts: ").append(ID).append(" IP: ").append(IP).append(" PORT: ").append(PORT).append(" Gateway IP: ").append(GatIP).append(" Virtual IP: ").append(VirIP);
+//                    Configure.append("Hosts: ").append(ID).append(" IP: ").append(IP).append(" PORT: ").append(PORT);
+                    Configure.append(VirIP).append(">").append(GatIP).append(">");
                     if (reader.readLine().trim().equals("Neighbors")) {
                         String[] NIDArray = NID.split(",");
                         String ANID = NIDArray[0];
@@ -51,12 +42,12 @@ public class Parser {
                     ID = reader.readLine().trim();
                     String PORT = reader.readLine().trim();
                     String IP = reader.readLine().trim();
-                    String GatIP = reader.readLine().trim();
-                    String GatIP2 = reader.readLine().trim();
-                    String VirIP = reader.readLine().trim();
+                    String VirIP1 = reader.readLine().trim();
+                    String VirIP2 = reader.readLine().trim();
                     String NID = reader.readLine().trim();
                     StringBuilder Configure = new StringBuilder();
-                    //Configure.append("Hosts: ").append(ID).append(" IP: ").append(IP).append(" PORT: ").append(PORT).append(" Gateway IP: ").append(GatIP).append(" Gateway IP: ").append(GatIP2).append(" Virtual IP: ").append(VirIP);
+//                    Configure.append("Hosts: ").append(ID).append(" IP: ").append(IP).append(" PORT: ").append(PORT);
+                    Configure.append(VirIP1).append(" ").append(VirIP2).append(">");
                     if (reader.readLine().trim().equals("Neighbors")) {
                         String[] prepArray = NID.split(" ");
                         for (int i = 0; i < prepArray.length; i++) {
@@ -95,9 +86,13 @@ public class Parser {
         }
         return ConfigInfo;
     }
-    public static Map<String, String> getNeighbors (String neighbors) {
+    public static String[] getAllVIP(String config) {
+        String[] IPs = config.split(" ");
+        return IPs;
+    }
+    public static Map<String, String> getNeighbors (String config) {
         Map<String, String> nearestNeighbors = new HashMap<>();
-        String[] neighborConfigs = neighbors.split(";");
+        String[] neighborConfigs = config.split(";");
         for (String neighborConfig : neighborConfigs) {
             String[] neighbor = neighborConfig.split(":");
             if (neighbor.length == 2) {

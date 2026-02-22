@@ -40,9 +40,8 @@ Routers
 R1
 9000
 127.0.0.1
-net1:R1
-net2:R2
-net3.R2
+net1.R1
+net2.R1
 R2,2000,127.0.0.1,net1:R1,net2:R2,net3:S3 S1,7000,127.0.0.1
 Neighbors
 
@@ -52,9 +51,8 @@ Routers
 R2
 2000
 127.0.0.1
-net1:R1
-net2:R2
-net3:S3
+net2.R2
+net3.R2
 R1,9000,127.0.0.1,net1:R1,net2:R2,net3:R2
 Neighbors
 S2,8000,127.0.0.1

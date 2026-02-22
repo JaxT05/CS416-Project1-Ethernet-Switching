@@ -1,5 +1,6 @@
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -9,13 +10,23 @@ public class Router {
         Scanner inputReader = new Scanner(System.in);
         System.out.println("What is the ID of this router?");
         String ID = inputReader.nextLine();
-        String neighbors = Parser.getConfigInfo().get(ID);
+        String config = Parser.getConfigInfo().get(ID);
+
+        String[] configArray = config.split(">");
+        String [] vIPs = Parser.getAllVIP(configArray[0]);
+        Map <String, String> nearestNeighbors = Parser.getNeighbors(configArray[1]);
+        System.out.println(Arrays.toString(vIPs));
 
         Map<String, String> forwardingTable = RouterTabling.returnForwardingTable(ID);
-        System.out.println(forwardingTable);
+//        System.out.println(forwardingTable);
 
-        Map<String, String> nearestNeighbors = Parser.getNeighbors(neighbors);
         ArrayList<String> nearestPorts = new ArrayList<>();
+        for (String neighbor : nearestNeighbors.keySet()) {
+            String neighborConfig = nearestNeighbors.get(neighbor);
+            System.out.println(neighborConfig);
+            nearestPorts.add(neighborConfig);
+        }
+        System.out.println(nearestNeighbors);
 
         int routerPort = Integer.parseInt(args[1]);
 
@@ -45,9 +56,9 @@ public class Router {
                     destinationDeviceID = frameContents[5].split(".")[1];
                 }
                 System.out.println(destinationDeviceID);
-                frameContents = swapAddress(ID, destinationDeviceID, frameContents);
+                String [] newFrameContents = swapAddress(ID, destinationDeviceID, frameContents);
                 String destinationDeviceConfig = findNeighbor(destinationDeviceID, nearestNeighbors);
-                frame = String.join(":", frameContents);
+                frame = String.join(":", newFrameContents);
                 printFrame(frame);
                 forwardFrame(destinationDeviceConfig, frame);
             }

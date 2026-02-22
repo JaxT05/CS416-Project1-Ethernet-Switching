@@ -10,9 +10,11 @@ public class Switch {
         Scanner inputReader = new Scanner(System.in);
         System.out.println("What is the ID of this switch?");
         String ID = inputReader.nextLine();
-        String neighbors = Parser.getConfigInfo().get(ID);
+        String config = Parser.getConfigInfo().get(ID);
+//        System.out.println(neighbors);
 
-        Map<String, String> nearestNeighbors = Parser.getNeighbors(neighbors);
+        Map<String, String> nearestNeighbors = Parser.getNeighbors(config);
+        System.out.println(nearestNeighbors);
 
         for (String neighbor : nearestNeighbors.keySet()) {
             String neighborConfig = nearestNeighbors.get(neighbor);
