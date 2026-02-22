@@ -13,20 +13,15 @@ public class Router {
         String config = Parser.getConfigInfo().get(ID);
 
         String[] configArray = config.split(">");
-        String [] vIPs = Parser.getAllVIP(configArray[0]);
-        Map <String, String> nearestNeighbors = Parser.getNeighbors(configArray[1]);
-        System.out.println(Arrays.toString(vIPs));
-
+        String[] vIPs = Parser.getAllVIP(configArray[0]);
+        Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[1]);
         Map<String, String> forwardingTable = RouterTabling.returnForwardingTable(ID);
-//        System.out.println(forwardingTable);
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
             String neighborConfig = nearestNeighbors.get(neighbor);
-            System.out.println(neighborConfig);
             nearestPorts.add(neighborConfig);
         }
-        System.out.println(nearestNeighbors);
 
         int routerPort = Integer.parseInt(args[1]);
 
@@ -36,40 +31,46 @@ public class Router {
         while (true) {
             incomingSocket.receive(incomingPacket);
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
-            printFrame(frame);
             String[] frameContents = frame.split(":");
+            System.out.print("Incoming Packet: ");
+            printFrame(frameContents);
             String destinationDeviceID;
 
-            //from my understanding, the router should read the vIP subnet of the destination, look for it in the table,
-            // and use the associated port to send it out
 
-            //if the router is directly connected to the destination subnet, set the destination MAC to the actual destination
-            // otherwise, set the destination MAC to
+            String[] destinationIP = frameContents[4].split("\\.");
+            String destinationSubnet = destinationIP[0];
+            String sourceSubnet = frameContents[3].split("\\.")[0];
+            String destinationID = destinationIP[1];
 
-            String destinationIP = frameContents[5].split(".")[0];
-
-            if (forwardingTable.containsKey(destinationIP)) {
-                if (forwardingTable.get(destinationIP).split(".")[1] == destinationIP) {
-                    destinationDeviceID = forwardingTable.get(destinationIP).split(".")[1];
+            if (!destinationSubnet.equalsIgnoreCase(sourceSubnet)) {
+                if (forwardingTable.containsKey(destinationSubnet)) {
+                    if (!forwardingTable.get(destinationSubnet).split("\\.")[0].equalsIgnoreCase(destinationSubnet)) {
+                        destinationDeviceID = forwardingTable.get(destinationSubnet).split("\\.")[1];
+                    } else {
+                        destinationDeviceID = destinationID;
+                    }
+                    String[] newFrameContents = swapAddress(ID, destinationDeviceID, frameContents);
+                    System.out.print("Outgoing Packet: ");
+                    printFrame(newFrameContents);
+                    String destinationDeviceConfig = findNeighbor(forwardingTable.get(destinationSubnet).split("\\.")[1], nearestNeighbors);
+                    frame = String.join(":", newFrameContents);
+                    forwardFrame(destinationDeviceConfig, frame);
+                    System.out.println();
                 }
-                else {
-                    destinationDeviceID = frameContents[5].split(".")[1];
-                }
-                System.out.println(destinationDeviceID);
-                String [] newFrameContents = swapAddress(ID, destinationDeviceID, frameContents);
-                String destinationDeviceConfig = findNeighbor(destinationDeviceID, nearestNeighbors);
-                frame = String.join(":", newFrameContents);
-                printFrame(frame);
-                forwardFrame(destinationDeviceConfig, frame);
-            }
-            else {
+            } else {
                 System.out.println("Frame ignored.");
             }
         }
     }
 
-    public static void printFrame (String frame) {
-        System.out.println(frame);
+    public static void printFrame (String[] frame) {
+        for (int i = 1; i < frame.length; i ++) {
+            System.out.printf("%s", frame[i]);
+            if (frame[i] != frame[frame.length-1]) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println();
     }
     public static String[] swapAddress(String ID, String destinationID, String [] frameContents) {
         frameContents[1] = ID;
