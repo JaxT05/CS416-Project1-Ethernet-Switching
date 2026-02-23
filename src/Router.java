@@ -13,9 +13,11 @@ public class Router {
         String config = Parser.getConfigInfo().get(ID);
 
         String[] configArray = config.split(">");
-        String[] vIPs = Parser.getAllVIP(configArray[0]);
-        Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[1]);
+        String[] vIPs = Parser.getAllVIP(configArray[2]);
+        Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[3]);
         Map<String, String> forwardingTable = RouterTabling.returnForwardingTable(ID);
+
+        System.out.println(Arrays.toString(configArray));
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
@@ -23,7 +25,8 @@ public class Router {
             nearestPorts.add(neighborConfig);
         }
 
-        int routerPort = Integer.parseInt(args[1]);
+        InetAddress realIP = InetAddress.getByName(configArray[0]);
+        int routerPort = Integer.parseInt(configArray[1]);
 
         DatagramSocket incomingSocket = new DatagramSocket(routerPort);
         DatagramPacket incomingPacket = new DatagramPacket(new byte[1024], 1024);
@@ -58,7 +61,7 @@ public class Router {
                     System.out.println();
                 }
             } else {
-                System.out.println("Frame ignored.");
+                System.out.printf("Frame ignored.\n\n");
             }
         }
     }

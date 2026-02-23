@@ -19,19 +19,24 @@ Example: A:R1:net1.A:net3.D:hello!
 
 public class Host {
     public static void main(String[] args) throws Exception {
-        //run the parser to figure out neighbors'
         Scanner scanner = new Scanner(System.in);
         System.out.print("ID: ");
         String ID = scanner.nextLine().trim();
         String hostNeighbors = Parser.getConfigInfo().get(ID);
         String hostConfig = Parser.getConfigInfo().get(ID);
         String[] configArray = hostConfig.split(">");
-        String gateIP = configArray[1];
+        System.out.println(Arrays.toString(configArray));
 
-        int port = Integer.parseInt(args[1]);
+        String virtualIP = Parser.getAllVIP(configArray[2])[0];
+        String hostSubnet = virtualIP.split("\\.")[0];
+
+        String gateIP = configArray[3];
+
+        InetAddress realIP = InetAddress.getByName(configArray[0]);
+        int port = Integer.parseInt(configArray[1]);
+
         ArrayList<String> nearestPorts = new ArrayList<>();
-        Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[2]);
-        System.out.println(nearestNeighbors);
+        Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[4]);
         DatagramSocket hostSocket = new DatagramSocket(port);
 
         for (String neighbor : nearestNeighbors.keySet()) {
@@ -39,7 +44,6 @@ public class Host {
             nearestPorts.add(neighborConfig);
         }
 
-        //creates a singular separate thread instead of establishing a pool of threads
         new Thread(() -> {
             try {
                 receiveFrame(hostSocket, ID);
@@ -55,25 +59,25 @@ public class Host {
                 System.out.println("Shutting down.");
                 break;
             }
+            System.out.print("Destination IP: ");
+            String destinationIP = scanner.nextLine().trim();
+            String[] destinationIPArray = destinationIP.split("\\.");
+            String destinationSubnet = destinationIPArray[0];
+            String destinationMAC = "";
 
-            System.out.print("Destination: ");
-            String destination = scanner.nextLine().trim();
+            if (destinationSubnet.equalsIgnoreCase(hostSubnet)) {
+                destinationMAC = destinationIPArray[1];
+            }
+            else {
+                destinationMAC = gateIP.split("\\.")[1];
+            }
+
             String nextDest = nearestPorts.getFirst();
 
-            String virtualSourceAddr = getSourceAddr(ID);
-
-            //if the destination is not in the subnet send it to the router
-            if(!isSameNetwork(virtualSourceAddr, destination)){
-
+            String frame = ID + ":" + destinationMAC + ":" + virtualIP + ":" + destinationIP  + ":" + message;
+            sendFrame(hostSocket, nextDest, frame);
             }
 
-            String newFrame = ID+ ":" + gateIP + ":" + virtualSourceAddr + ":" +destination  + ":" + message;
-            String frame = ID+ ":"+ destination  + ":" + message;
-            System.out.println("Frame: " + newFrame);
-            if(!hostNeighbors.contains(destination)){
-                sendFrame(hostSocket, nextDest, newFrame);
-            }
-        }
         hostSocket.close();
     }
 
@@ -84,9 +88,9 @@ public class Host {
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
 
             String[] frameContents = frame.split(":");
-            String sourceDeviceID = frameContents[1];
+            String sourceDeviceID = frameContents[3].split("\\.")[1];
             String destinationDeviceID = frameContents[2];
-            String message = frameContents[3];
+            String message = frameContents[frameContents.length-1];
             if (destinationDeviceID.equalsIgnoreCase(ID)) {
                 System.out.printf("%s, Source: %s\n", message, sourceDeviceID);
             }
@@ -98,7 +102,6 @@ public class Host {
 
     public static void sendFrame(DatagramSocket hostSocket, String nextDest, String frame) throws Exception {
         String[] nextDestArray = nextDest.split(" ");
-//        System.out.println(Arrays.toString(nextDestArray));
         InetAddress nextDestIP = InetAddress.getByName(nextDestArray[0]);
         int nextDestPort = Integer.parseInt(nextDestArray[1]);
         DatagramPacket outgoingPacket = new DatagramPacket(
@@ -115,6 +118,7 @@ public class Host {
         String net2 = s2.split("\\.")[0];
         return net1.equals(net2);
     }
+
 
     public static String getSourceAddr(String id){
         String sourceAddress = "";

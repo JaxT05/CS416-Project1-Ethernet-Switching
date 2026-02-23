@@ -10,16 +10,19 @@ public class Switch {
         Scanner inputReader = new Scanner(System.in);
         System.out.println("What is the ID of this switch?");
         String ID = inputReader.nextLine();
-        String config = Parser.getConfigInfo().get(ID);
+        String switchConfig = Parser.getConfigInfo().get(ID);
+        String[] configArray = switchConfig.split(">");
+        System.out.println(Arrays.toString(configArray));
 
-        Map<String, String> nearestNeighbors = Parser.getNeighbors(config);
+        Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[2]);
 
         for (String neighbor : nearestNeighbors.keySet()) {
             String neighborConfig = nearestNeighbors.get(neighbor);
             nearestPorts.add(neighborConfig);
         }
 
-        int switchPort = Integer.parseInt(args[1]);
+        InetAddress realIP = InetAddress.getByName(configArray[0]);
+        int switchPort = Integer.parseInt(configArray[1]);
         DatagramSocket incomingSocket = new DatagramSocket(switchPort);
         DatagramPacket incomingPacket = new DatagramPacket(new byte[1024], 1024);
         //have a port open and listening
