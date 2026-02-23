@@ -25,7 +25,6 @@ public class Host {
         String hostNeighbors = Parser.getConfigInfo().get(ID);
         String hostConfig = Parser.getConfigInfo().get(ID);
         String[] configArray = hostConfig.split(">");
-        System.out.println(Arrays.toString(configArray));
 
         String virtualIP = Parser.getAllVIP(configArray[2])[0];
         String hostSubnet = virtualIP.split("\\.")[0];

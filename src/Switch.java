@@ -12,7 +12,6 @@ public class Switch {
         String ID = inputReader.nextLine();
         String switchConfig = Parser.getConfigInfo().get(ID);
         String[] configArray = switchConfig.split(">");
-        System.out.println(Arrays.toString(configArray));
 
         Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[2]);
 

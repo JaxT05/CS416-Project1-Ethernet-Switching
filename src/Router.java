@@ -17,7 +17,6 @@ public class Router {
         Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[3]);
         Map<String, String> forwardingTable = RouterTabling.returnForwardingTable(ID);
 
-        System.out.println(Arrays.toString(configArray));
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
