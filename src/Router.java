@@ -115,29 +115,30 @@ public class Router {
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
-            String neighborConfig = nearestNeighbors.get(neighbor);
-            nearestPorts.add(neighborConfig);
-        }
-
-        for (String portInfo: nearestPorts ) {
-            try {
-                String[] portArray = portInfo.split(" ");
-                InetAddress destinationIP = InetAddress.getByName(portArray[0]);
-                int destinationPort = Integer.parseInt(portArray[1]);
-
-                DatagramSocket outgoingSocket = new DatagramSocket();
-                DatagramPacket forward = new DatagramPacket(
-                        frame.getBytes(),
-                        frame.getBytes().length,
-                        destinationIP,
-                        destinationPort
-                );
-                outgoingSocket.send(forward);
-                outgoingSocket.close();
-            } catch (Exception e) {
-                System.out.println("Error sending routing update: " + e.getMessage());
+            if(neighbor.toUpperCase().startsWith("R")) {
+                String neighborConfig = nearestNeighbors.get(neighbor);
+                nearestPorts.add(neighborConfig);
             }
         }
-    }
 
+            for (String portInfo : nearestPorts) {
+                try {
+                    String[] portArray = portInfo.split(" ");
+                    InetAddress destinationIP = InetAddress.getByName(portArray[0]);
+                    int destinationPort = Integer.parseInt(portArray[1]);
+
+                    DatagramSocket outgoingSocket = new DatagramSocket();
+                    DatagramPacket forward = new DatagramPacket(
+                            frame.getBytes(),
+                            frame.getBytes().length,
+                            destinationIP,
+                            destinationPort
+                    );
+                    outgoingSocket.send(forward);
+                    outgoingSocket.close();
+                } catch (Exception e) {
+                    System.out.println("Error sending routing update: " + e.getMessage());
+                }
+            }
+    }
 }
