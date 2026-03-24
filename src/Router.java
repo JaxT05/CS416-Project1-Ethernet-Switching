@@ -1,21 +1,21 @@
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
 
 
 public class Router {
+
     public static void main(String[] args) throws Exception {
         Scanner inputReader = new Scanner(System.in);
         System.out.println("What is the ID of this router?");
         String ID = inputReader.nextLine();
         String config = Parser.getConfigInfo().get(ID);
-
         String[] configArray = config.split(">");
         String[] vIPs = Parser.getAllVIP(configArray[2]);
         Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[3]);
         Map<String, String> forwardingTable = RouterTabling.returnForwardingTable(ID);
+
 
 
         ArrayList<String> nearestPorts = new ArrayList<>();
@@ -100,4 +100,44 @@ public class Router {
         }
         return neighborInformation;
     }
+    public static String routingUpdatePacket(String ID, Map<String, String> forwardingTable) {
+        StringBuilder payload = new StringBuilder("1:" + ID + ":");
+
+        for (Map.Entry<String, String> entry : forwardingTable.entrySet()) {
+            payload.append(entry.getKey()).append("=").append(entry.getValue()).append(";");
+        }
+
+        return payload.toString();
+    }
+
+    public static void flooding(String sourceDeviceID, Map<String, String> nearestNeighbors){
+        String frame = routingUpdatePacket(sourceDeviceID, nearestNeighbors);
+
+        ArrayList<String> nearestPorts = new ArrayList<>();
+        for (String neighbor : nearestNeighbors.keySet()) {
+            String neighborConfig = nearestNeighbors.get(neighbor);
+            nearestPorts.add(neighborConfig);
+        }
+
+        for (String portInfo: nearestPorts ) {
+            try {
+                String[] portArray = portInfo.split(" ");
+                InetAddress destinationIP = InetAddress.getByName(portArray[0]);
+                int destinationPort = Integer.parseInt(portArray[1]);
+
+                DatagramSocket outgoingSocket = new DatagramSocket();
+                DatagramPacket forward = new DatagramPacket(
+                        frame.getBytes(),
+                        frame.getBytes().length,
+                        destinationIP,
+                        destinationPort
+                );
+                outgoingSocket.send(forward);
+                outgoingSocket.close();
+            } catch (Exception e) {
+                System.out.println("Error sending routing update: " + e.getMessage());
+            }
+        }
+    }
+
 }
