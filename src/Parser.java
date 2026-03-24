@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Parser {
-    static String configFile = "src/config";
+    static String configFile = "src/thirdIterationConfig";
     static HashMap<String, String> ConfigInfo = new HashMap<>();
     static Scanner scanner = new Scanner(System.in);
     static String ID;
@@ -38,13 +38,12 @@ public class Parser {
                     ID = reader.readLine().trim();
                     String PORT = reader.readLine().trim();
                     String IP = reader.readLine().trim();
-                    String VirIP1 = reader.readLine().trim();
-                    String VirIP2 = reader.readLine().trim();
+                    String VirIPs = reader.readLine().trim();
                     String NID = reader.readLine().trim();
                     StringBuilder Configure = new StringBuilder();
 //                    Configure.append("Hosts: ").append(ID).
                     Configure.append(IP).append(">").append(PORT).append(">");
-                    Configure.append(VirIP1).append(" ").append(VirIP2).append(">");
+                    Configure.append(VirIPs).append(">");
                     if (reader.readLine().trim().equals("Neighbors")) {
                         String[] prepArray = NID.split(" ");
                         for (int i = 0; i < prepArray.length; i++) {
