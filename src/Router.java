@@ -1,22 +1,22 @@
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class Router {
-
     public static void main(String[] args) throws Exception {
         Scanner inputReader = new Scanner(System.in);
         System.out.println("What is the ID of this router?");
         String ID = inputReader.nextLine();
         String config = Parser.getConfigInfo().get(ID);
+
         String[] configArray = config.split(">");
         String[] vIPs = Parser.getAllVIP(configArray[2]);
         Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[3]);
-        Map<String, String> forwardingTable = RouterTabling.returnForwardingTable(ID);
+        //build forwarding table based off of neighbors
+        Map<String, String> forwardingTable = new HashMap<>();
+        System.out.println(nearestNeighbors);
 
-
+        //forwardingTable.put(nearestNeighbors.get(ID), )
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
@@ -74,11 +74,13 @@ public class Router {
         }
         System.out.println();
     }
+
     public static String[] swapAddress(String ID, String destinationID, String [] frameContents) {
         frameContents[1] = ID;
         frameContents[2] = destinationID;
         return frameContents;
     }
+
     public static void forwardFrame(String destinationDeviceConfig, String frame) throws Exception {
         String[] destinationDeviceConfigArray = destinationDeviceConfig.split(" ");
         InetAddress destinationIP = InetAddress.getByName(destinationDeviceConfigArray[0]);
@@ -93,6 +95,7 @@ public class Router {
         outgoingSocket.send(forward);
         outgoingSocket.close();
     }
+
     public static String findNeighbor(String sourceDeviceID, Map<String, String> nearestNeighbors) {
         String neighborInformation = "";
         if (nearestNeighbors.containsKey(sourceDeviceID)) {
@@ -100,8 +103,41 @@ public class Router {
         }
         return neighborInformation;
     }
+    /*
+
+     */
+    public static Map<String, String> distanceVectorRouting (String packet, Map<String, String> forwardingTable){
+        //Router flooding can only send to other routers
+        //Check if the port to be flooded is a router
+        //packet format
+        //vector list format => Key: "Subnet" -> Value: "NextHopID,TotalCost"
+        String[] parts = packet.split(":");
+        String sourceID = parts[1];
+
+        // 1. Get the raw vector string from the packet
+        String vectorData = parts[2];
+
+        // 2. Split by semicolon to get each individual route
+        String[] routes = vectorData.split(";");
+
+        for(String route: routes){
+            String[] routeDetails = route.split(",");
+            String neighborSubnet = routeDetails[0];
+            int neighborCost = Integer.parseInt(routeDetails[1]);
+            //dummy data
+            int currentCost = 0;
+            if(neighborCost < currentCost){
+                //update Table
+                //send to neighbor routers
+                flooding(sourceID, forwardingTable);
+            }
+        }
+
+        return null;
+    }
+
     public static String routingUpdatePacket(String ID, Map<String, String> forwardingTable) {
-        StringBuilder payload = new StringBuilder("1:" + ID + ":");
+        StringBuilder payload = new StringBuilder(">:" + ID + ":");
 
         for (Map.Entry<String, String> entry : forwardingTable.entrySet()) {
             payload.append(entry.getKey()).append("=").append(entry.getValue()).append(";");
@@ -115,30 +151,29 @@ public class Router {
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
-            if(neighbor.toUpperCase().startsWith("R")) {
-                String neighborConfig = nearestNeighbors.get(neighbor);
-                nearestPorts.add(neighborConfig);
-            }
+            String neighborConfig = nearestNeighbors.get(neighbor);
+            nearestPorts.add(neighborConfig);
         }
 
-            for (String portInfo : nearestPorts) {
-                try {
-                    String[] portArray = portInfo.split(" ");
-                    InetAddress destinationIP = InetAddress.getByName(portArray[0]);
-                    int destinationPort = Integer.parseInt(portArray[1]);
+        for (String portInfo: nearestPorts ) {
+            try {
+                String[] portArray = portInfo.split(" ");
+                InetAddress destinationIP = InetAddress.getByName(portArray[0]);
+                int destinationPort = Integer.parseInt(portArray[1]);
 
-                    DatagramSocket outgoingSocket = new DatagramSocket();
-                    DatagramPacket forward = new DatagramPacket(
-                            frame.getBytes(),
-                            frame.getBytes().length,
-                            destinationIP,
-                            destinationPort
-                    );
-                    outgoingSocket.send(forward);
-                    outgoingSocket.close();
-                } catch (Exception e) {
-                    System.out.println("Error sending routing update: " + e.getMessage());
-                }
+                DatagramSocket outgoingSocket = new DatagramSocket();
+                DatagramPacket forward = new DatagramPacket(
+                        frame.getBytes(),
+                        frame.getBytes().length,
+                        destinationIP,
+                        destinationPort
+                );
+                outgoingSocket.send(forward);
+                outgoingSocket.close();
+            } catch (Exception e) {
+                System.out.println("Error sending routing update: " + e.getMessage());
             }
+        }
     }
 }
+
