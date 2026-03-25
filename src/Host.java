@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -16,6 +15,10 @@ v. Short message
 
 Example: A:R1:net1.A:net3.D:hello!
 */
+
+/*
+Differentiate between user packet and router packet
+ */
 
 public class Host {
     public static void main(String[] args) throws Exception {

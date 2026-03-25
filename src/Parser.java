@@ -42,6 +42,7 @@ public class Parser {
                     String NID = reader.readLine().trim();
                     StringBuilder Configure = new StringBuilder();
 //                    Configure.append("Hosts: ").append(ID).
+                    Configure.append(NID).append(">");
                     Configure.append(IP).append(">").append(PORT).append(">");
                     Configure.append(VirIPs).append(">");
                     if (reader.readLine().trim().equals("Neighbors")) {
@@ -87,6 +88,7 @@ public class Parser {
         String[] IPs = config.split(" ");
         return IPs;
     }
+
     public static Map<String, String> getNeighbors (String config) {
         Map<String, String> nearestNeighbors = new HashMap<>();
         String[] neighborConfigs = config.split(";");

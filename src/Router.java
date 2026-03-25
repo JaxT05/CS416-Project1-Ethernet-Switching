@@ -1,7 +1,6 @@
 import java.net.*;
 import java.util.*;
 
-
 public class Router {
     public static void main(String[] args) throws Exception {
         Scanner inputReader = new Scanner(System.in);
@@ -10,13 +9,50 @@ public class Router {
         String config = Parser.getConfigInfo().get(ID);
 
         String[] configArray = config.split(">");
-        String[] vIPs = Parser.getAllVIP(configArray[2]);
-        Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[3]);
+        String[] vIPs = Parser.getAllVIP(configArray[3]);
+        Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[4]);
         //build forwarding table based off of neighbors
         Map<String, String> forwardingTable = new HashMap<>();
-        System.out.println(nearestNeighbors);
+        Map<String, Integer> routingTable = new HashMap<>();
 
-        //forwardingTable.put(nearestNeighbors.get(ID), )
+        //Initialize routing table with cost to neighbor
+        for(Map.Entry <String, String> neighbor: nearestNeighbors.entrySet()){
+            String neighborID = neighbor.getKey();
+            int cost = 1;
+            routingTable.put(neighborID,cost);
+        }
+        //Put source router ID in the table
+        routingTable.put(ID, 0);
+        System.out.println(STR."Routing Table \n\{"-".repeat(20)}\n"+ routingTable + STR."\n\{"-".repeat(20)}\n");
+
+        // Forwarding table ("Destination subnet", "Next Hop ID")
+        String allDevicesConfig = configArray[0];
+        String[] deviceBlocks = allDevicesConfig.split(" ");
+
+        /*
+        Algorithm checks whether neighbor ID has the same port subnet.
+        If true neighbor and source must share wire and will use that to reach destination
+         */
+
+        for (String block : deviceBlocks) {
+            String[] pieces = block.split(",");
+            if (pieces.length < 4) continue;
+
+            String neighborID = pieces[0];
+
+            for (int i = 3; i < pieces.length; i++) {
+                String neighborPortRaw = pieces[i];
+
+                String neighborSubnet = neighborPortRaw.split("[:.]")[0];
+
+                if (Arrays.toString(vIPs).contains(neighborSubnet)) {
+
+                    forwardingTable.put(neighborSubnet, neighborID);
+                }
+            }
+        }
+
+        System.out.println(STR."Forwarding Table \n\{"-".repeat(20)}\n" + forwardingTable + STR."\n\{"-".repeat(20)}");
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
@@ -24,8 +60,8 @@ public class Router {
             nearestPorts.add(neighborConfig);
         }
 
-        InetAddress realIP = InetAddress.getByName(configArray[0]);
-        int routerPort = Integer.parseInt(configArray[1]);
+        InetAddress realIP = InetAddress.getByName(configArray[1]);
+        int routerPort = Integer.parseInt(configArray[2]);
 
         DatagramSocket incomingSocket = new DatagramSocket(routerPort);
         DatagramPacket incomingPacket = new DatagramPacket(new byte[1024], 1024);
@@ -106,7 +142,7 @@ public class Router {
     /*
 
      */
-    public static Map<String, String> distanceVectorRouting (String packet, Map<String, String> forwardingTable){
+    public static Map<String, String> distanceVectorRouting (String packet, Map<String, String> forwardingTable, Map<String, Integer> routingTable){
         //Router flooding can only send to other routers
         //Check if the port to be flooded is a router
         //packet format
@@ -114,10 +150,8 @@ public class Router {
         String[] parts = packet.split(":");
         String sourceID = parts[1];
 
-        // 1. Get the raw vector string from the packet
         String vectorData = parts[2];
 
-        // 2. Split by semicolon to get each individual route
         String[] routes = vectorData.split(";");
 
         for(String route: routes){
@@ -132,7 +166,6 @@ public class Router {
                 flooding(sourceID, forwardingTable);
             }
         }
-
         return null;
     }
 
@@ -176,4 +209,3 @@ public class Router {
         }
     }
 }
-
