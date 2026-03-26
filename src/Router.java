@@ -13,18 +13,21 @@ public class Router {
         Map<String, String> nearestNeighbors = Parser.getNeighbors(configArray[4]);
         //build forwarding table based off of neighbors
         Map<String, String> forwardingTable = new HashMap<>();
-        Map<String, Integer> routingTable = new HashMap<>();
+        StringBuilder routerVectors = new StringBuilder();
+        Map<String, String> routingTable = new HashMap<>();
 
         //Initialize routing table with cost to neighbor
         for(Map.Entry <String, String> neighbor: nearestNeighbors.entrySet()){
             String neighborID = neighbor.getKey();
             int cost = 1;
-            routingTable.put(neighborID,cost);
+            String routerVectorInfo = neighborID + "-" + cost;
+            routerVectors.append(routerVectorInfo + ",");
         }
         //Put source router ID in the table
-        routingTable.put(ID, 0);
-        System.out.println(STR."Routing Table \n\{"-".repeat(20)}\n"+ routingTable + STR."\n\{"-".repeat(20)}\n");
-
+        routerVectors.append(ID + "-" + 0);
+        routingTable.put(ID, routerVectors.toString());
+        System.out.println("Routing Table");
+        System.out.println(routingTable);
         // Forwarding table ("Destination subnet", "Next Hop ID")
         String allDevicesConfig = configArray[0];
         String[] deviceBlocks = allDevicesConfig.split(" ");
@@ -33,7 +36,7 @@ public class Router {
         Algorithm checks whether neighbor ID has the same port subnet.
         If true neighbor and source must share wire and will use that to reach destination
          */
-
+        //initializes forwarding table
         for (String block : deviceBlocks) {
             String[] pieces = block.split(",");
             if (pieces.length < 4) continue;
@@ -51,8 +54,8 @@ public class Router {
                 }
             }
         }
-
-        System.out.println(STR."Forwarding Table \n\{"-".repeat(20)}\n" + forwardingTable + STR."\n\{"-".repeat(20)}");
+        System.out.println("Initial Forwarding Table");
+        System.out.println(forwardingTable);
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
@@ -65,6 +68,8 @@ public class Router {
 
         DatagramSocket incomingSocket = new DatagramSocket(routerPort);
         DatagramPacket incomingPacket = new DatagramPacket(new byte[1024], 1024);
+
+        flooding(ID, routingTable, nearestNeighbors);
         //have a port open and listening
         while (true) {
             incomingSocket.receive(incomingPacket);
@@ -74,29 +79,33 @@ public class Router {
             printFrame(frameContents);
             String destinationDeviceID;
 
-
-            String[] destinationIP = frameContents[4].split("\\.");
-            String destinationSubnet = destinationIP[0];
-            String sourceSubnet = frameContents[3].split("\\.")[0];
-            String destinationID = destinationIP[1];
-
-            if (!destinationSubnet.equalsIgnoreCase(sourceSubnet)) {
-                if (forwardingTable.containsKey(destinationSubnet)) {
-                    if (!forwardingTable.get(destinationSubnet).split("\\.")[0].equalsIgnoreCase(destinationSubnet)) {
-                        destinationDeviceID = forwardingTable.get(destinationSubnet).split("\\.")[1];
-                    } else {
-                        destinationDeviceID = destinationID;
-                    }
-                    String[] newFrameContents = swapAddress(ID, destinationDeviceID, frameContents);
-                    System.out.print("Outgoing Packet: ");
-                    printFrame(newFrameContents);
-                    String destinationDeviceConfig = findNeighbor(forwardingTable.get(destinationSubnet).split("\\.")[1], nearestNeighbors);
-                    frame = String.join(":", newFrameContents);
-                    forwardFrame(destinationDeviceConfig, frame);
-                    System.out.println();
-                }
+            if (Objects.equals(frameContents[0], ">")) {
+                System.out.println("Routing packet received");
+                distanceVectorRouting(ID, frameContents, forwardingTable, routingTable, nearestNeighbors);
             } else {
-                System.out.printf("Frame ignored.\n\n");
+                String[] destinationIP = frameContents[4].split("\\.");
+                String destinationSubnet = destinationIP[0];
+                String sourceSubnet = frameContents[3].split("\\.")[0];
+                String destinationID = destinationIP[1];
+
+                if (!destinationSubnet.equalsIgnoreCase(sourceSubnet)) {
+                    if (forwardingTable.containsKey(destinationSubnet)) {
+                        if (!forwardingTable.get(destinationSubnet).split("\\.")[0].equalsIgnoreCase(destinationSubnet)) {
+                            destinationDeviceID = forwardingTable.get(destinationSubnet).split("\\.")[1];
+                        } else {
+                            destinationDeviceID = destinationID;
+                        }
+                        String[] newFrameContents = swapAddress(ID, destinationDeviceID, frameContents);
+                        System.out.print("Outgoing Packet: ");
+                        printFrame(newFrameContents);
+                        String destinationDeviceConfig = findNeighbor(forwardingTable.get(destinationSubnet).split("\\.")[1], nearestNeighbors);
+                        frame = String.join(":", newFrameContents);
+                        forwardFrame(destinationDeviceConfig, frame);
+                        System.out.println();
+                    }
+                } else {
+                    System.out.printf("Frame ignored.\n\n");
+                }
             }
         }
     }
@@ -142,35 +151,50 @@ public class Router {
     /*
 
      */
-    public static Map<String, String> distanceVectorRouting (String packet, Map<String, String> forwardingTable, Map<String, Integer> routingTable){
+    public static void distanceVectorRouting (String ID, String[] routingPacketContents, Map<String, String> forwardingTable, Map<String, String> routingTable, Map<String, String> nearestNeighbors){
         //Router flooding can only send to other routers
         //Check if the port to be flooded is a router
         //packet format
         //vector list format => Key: "Subnet" -> Value: "NextHopID,TotalCost"
-        String[] parts = packet.split(":");
-        String sourceID = parts[1];
+//        String[] parts = routingPacket.split(":");
 
-        String vectorData = parts[2];
+        String routingData = routingPacketContents[1];
+        String[] routingDataArray = routingData.split(";");
+        boolean changed = false;
 
-        String[] routes = vectorData.split(";");
+        for(String routingDataPiece : routingDataArray) {
+            String [] routingTableEntry = routingDataPiece.split("=");
+            String tableEntryKey = routingTableEntry[0];
+            String tableEntryValue = routingTableEntry[1];
+            if (!routingTable.containsKey(tableEntryKey)) {
+                routingTable.put(tableEntryKey, tableEntryValue);
+                changed = true;
+            } else {
 
-        for(String route: routes){
-            String[] routeDetails = route.split(",");
-            String neighborSubnet = routeDetails[0];
-            int neighborCost = Integer.parseInt(routeDetails[1]);
-            //dummy data
-            int currentCost = 0;
-            if(neighborCost < currentCost){
-                //update Table
-                //send to neighbor routers
-                flooding(sourceID, forwardingTable);
             }
         }
-        return null;
+        System.out.println(routingTable);
+        if (changed) {
+            flooding(ID, routingTable,nearestNeighbors);
+        }
+
+//        for(String route: routes){
+//            String[] routeDetails = route.split(",");
+//            String neighborSubnet = routeDetails[0];
+//            int neighborCost = Integer.parseInt(routeDetails[1]);
+//            //dummy data
+//            int currentCost = 0;
+//            if(neighborCost < currentCost){
+//                //update Table
+//                //send to neighbor routers
+//                flooding(sourceID, routingTable, nearestNeighbors);
+//            }
+//        }
+//        return null;
     }
 
     public static String routingUpdatePacket(String ID, Map<String, String> forwardingTable) {
-        StringBuilder payload = new StringBuilder(">:" + ID + ":");
+        StringBuilder payload = new StringBuilder(">:");
 
         for (Map.Entry<String, String> entry : forwardingTable.entrySet()) {
             payload.append(entry.getKey()).append("=").append(entry.getValue()).append(";");
@@ -179,8 +203,9 @@ public class Router {
         return payload.toString();
     }
 
-    public static void flooding(String sourceDeviceID, Map<String, String> nearestNeighbors){
-        String frame = routingUpdatePacket(sourceDeviceID, nearestNeighbors);
+    public static void flooding(String sourceDeviceID, Map<String, String> routingTable, Map<String, String> nearestNeighbors){
+
+        String frame = routingUpdatePacket(sourceDeviceID, routingTable);
 
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
