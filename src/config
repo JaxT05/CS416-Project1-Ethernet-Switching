@@ -4,68 +4,94 @@ A
 127.0.0.1
 net1.R1
 net1.A
-S1,7000,127.0.0.1
+S1,5000,127.0.0.1
 Neighbors
-
 
 Hosts
 B
-4000
+3001
 127.0.0.1
-net1.R1
-net1.B
-S1,7000,127.0.0.1
+net2.R3
+net2.B
+S2,5001,127.0.0.1
 Neighbors
-
 
 Hosts
 C
-5000
+3002
 127.0.0.1
-net3.R2
+net3.R6
 net3.C
-S2,8000,127.0.0.1
+S3,5002,127.0.0.1
 Neighbors
 
-Hosts
-D
-6000
-127.0.0.1
-net3.R2
-net3.D
-S2,8000,127.0.0.1
-Neighbors
 
 Routers
 R1
-9000
+4000
 127.0.0.1
-net1.R1
-net2.R1
-R2,2000,127.0.0.1,net1:R1,net2:R2,net3:S3 S1,7000,127.0.0.1
+net1.R1 net4.R1 net5.R1
+R2,4001,127.0.0.1,net4:R2,net6:R2,net7:R2 R3,4002,127.0.0.1,net2:R3,net5:R3,net6:R3,net8:R3 S1,5000,127.0.0.1,net1:S1
 Neighbors
-
-
 
 Routers
 R2
-2000
+4001
 127.0.0.1
-net2.R2
-net3.R2
-R1,9000,127.0.0.1,net1:R1,net2:R2,net3:R2 S2,8000,127.0.0.1
+net4.R2 net6.R2 net7.R2
+R1,4000,127.0.0.1,net1:R1,net4:R1,net5:R1 R3,4002,127.0.0.1,net2.R3,net5:R3,net6:R3,net8:R3 R4,4003,127.0.0.1,net7:R4,net9:R4,net10:R4
 Neighbors
+
+Routers
+R3
+4002
+127.0.0.1
+net2.R3 net5.R3 net6.R3 net8.R3
+R1,4000,127.0.0.1,net1:R1,net4:R1,net5:R1 R2,4001,127.0.0.1,net4:R2,net6:R2,net7:R2 R5,4004,127.0.0.1,net8:R5,net9:R5 S2,5001,127.0.0.1
+Neighbors
+
+Routers
+R4
+4003
+127.0.0.1
+net7.R4 net9.R4 net10.R4
+R2,4001,127.0.0.1,net4:R2,net6:R2,net7:R2 R5,4004,127.0.0.1,net8:R5,net9:R5 R6,4005,127.0.0.1,net10:R6,net3:R6
+Neighbors
+
+Routers
+R5
+4004
+127.0.0.1
+net8.R5 net9.R5
+R3,4002,127.0.0.1,net2.R3,net5:R3,net6:R3,net8:R3 R4,4003,127.0.0.1,net7:R4,net9:R4,net10:R4
+Neighbors
+
+Routers
+R6
+4005
+127.0.0.1
+net3.R6,net10.R6
+R4,4003,127.0.0.1,net7:R4,net9:R4,net10:R4 S3,5002,127.0.0.1
+Neighbors
+
 
 Switch
 S1
-7000
+5000
 127.0.0.1
-A,3000,127.0.0.1,net1.R1,net1.A B,4000,127.0.0.1,net1.R1,net1.B R1,9000,127.0.0.1,net1:R1,net2:R2,net3:R2
+A,3000,127.0.0.1,net1.R1,net1.A R1,4000,127.0.0.1,net1:R1,net4:R1,net5:R1
 Neighbors
 
 Switch
 S2
-8000
+5001
 127.0.0.1
-C,5000,127.0.0.1,net2.R2,net3.C D,6000,127.0.0.1,net2.R2,net3.D R2,2000,127.0.0.1,net1:R1,net2:R2,net3:S3
+B,3001,127.0.0.1,net2.R3,net2.B R3,4002,127.0.0.1,net2.R3,net5:R3,net6:R3,net8:R3
+Neighbors
+
+Switch
+S3
+5002
+127.0.0.1
+C,3002,127.0.0.1,net3.R6,net3.C R6,4005,127.0.0.1,net10:R6,net3:R6
 Neighbors

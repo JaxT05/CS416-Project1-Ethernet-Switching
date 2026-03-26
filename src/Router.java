@@ -17,26 +17,30 @@ public class Router {
         Map<String, String> routingTable = new HashMap<>();
 
         //Initialize routing table with cost to neighbor
-        for(Map.Entry <String, String> neighbor: nearestNeighbors.entrySet()){
-            String neighborID = neighbor.getKey();
-            int cost = 1;
-            String routerVectorInfo = neighborID + "-" + cost;
-            routerVectors.append(routerVectorInfo + ",");
-        }
+//        for(Map.Entry <String, String> neighbor: nearestNeighbors.entrySet()){
+//            String neighborID = neighbor.getKey();
+//            String currentVIP = "";
+//            int cost = 1;
+//            String routerVectorInfo = neighborID + "-" + cost + "-" + currentVIP;
+//            routerVectors.append(routerVectorInfo).append(",");
+//        }
+//
+//        for(String net: vIPs){
+//            System.out.println(net);
+//        }
         //Put source router ID in the table
-        routerVectors.append(ID + "-" + 0);
-        routingTable.put(ID, routerVectors.toString());
-        System.out.println("Routing Table");
-        System.out.println(routingTable);
-        // Forwarding table ("Destination subnet", "Next Hop ID")
-        String allDevicesConfig = configArray[0];
-        String[] deviceBlocks = allDevicesConfig.split(" ");
-
+//        routerVectors.append(ID).append("-").append(0);
+//        routingTable.put(ID, routerVectors.toString());
         /*
         Algorithm checks whether neighbor ID has the same port subnet.
         If true neighbor and source must share wire and will use that to reach destination
          */
-        //initializes forwarding table
+
+        // Forwarding table ("Destination subnet", "Next Hop ID")
+        String allDevicesConfig = configArray[0];
+        String[] deviceBlocks = allDevicesConfig.split(" ");
+        routerVectors.setLength(0);
+
         for (String block : deviceBlocks) {
             String[] pieces = block.split(",");
             if (pieces.length < 4) continue;
@@ -44,16 +48,26 @@ public class Router {
             String neighborID = pieces[0];
 
             for (int i = 3; i < pieces.length; i++) {
-                String neighborPortRaw = pieces[i];
-
-                String neighborSubnet = neighborPortRaw.split("[:.]")[0];
+                String neighborSubnet = pieces[i].split("[:.]")[0];
 
                 if (Arrays.toString(vIPs).contains(neighborSubnet)) {
+
                     String subnetInfo = neighborID + "." + neighborSubnet;
                     forwardingTable.put(neighborSubnet, subnetInfo);
+
+                    int cost = 1;
+                    String routerVectorInfo = neighborID + "-" + cost + "-" + neighborSubnet;
+                    routerVectors.append(routerVectorInfo).append(",");
+
+                    break;
                 }
             }
         }
+
+        routerVectors.append(ID).append("-").append(0).append("-local");
+        routingTable.put(ID, routerVectors.toString());
+        System.out.println("Routing Table");
+        System.out.println(routingTable);
         System.out.println("Initial Forwarding Table");
         System.out.println(forwardingTable);
 
@@ -155,6 +169,7 @@ public class Router {
         String[] routingDataArray = routingData.split(";");
         boolean changed = false;
 
+        //Routing data piece [R3=R1-1-net5,R2-1-net6,R5-1-net8,S2-1-net2,R3-0-local]
         for(String routingDataPiece : routingDataArray) {
             String [] newRoutingTableEntry = routingDataPiece.split("=");
             String newTableEntryKey = newRoutingTableEntry[0];
@@ -162,28 +177,23 @@ public class Router {
             String[] distanceVectorArray = newTableEntryValue.trim().split(",");
             if (!routingTable.containsKey(newTableEntryKey)) {
                 routingTable.put(newTableEntryKey, newTableEntryValue);
-                // my code isn't usable, but I'm leaving it here anyway
-//                String[] existingTableEntryArray = routingTable.get(ID).split(",");
-//
-//                for (String newVector : distanceVectorArray) {
-//                    String newVectorID = newVector.split("-")[0];
-//                    int newVectorCost = Integer.parseInt(newVector.split("-")[1]);
-//                    for (String currentVector : existingTableEntryArray) {
-//                        if (currentVector.contains(newVectorID)) {
-//                            int currentVectorCost = Integer.parseInt(currentVector.split("-")[1]);
-//                            newVectorCost += currentVectorCost;
-//                        }
-//                    }
-//                }
+                /*
+                If values are not in the routing table
+                Put it as an entry in the current table
+                 */
+
+
+
 
                 changed = true;
             }
-            else {
+//            else {
 //                String tableEntry = routingTable.get(newTableEntryKey);
 //                for (String vector : distanceVectorArray) {
 //                    String [] vectorArray = vector.split("-");
 //                }
-            }
+//            }
+
         }
         System.out.println(routingTable);
         if (changed) {
