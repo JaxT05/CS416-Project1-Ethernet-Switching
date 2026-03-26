@@ -49,8 +49,8 @@ public class Router {
                 String neighborSubnet = neighborPortRaw.split("[:.]")[0];
 
                 if (Arrays.toString(vIPs).contains(neighborSubnet)) {
-
-                    forwardingTable.put(neighborSubnet, neighborID);
+                    String subnetInfo = neighborID + "." + neighborSubnet;
+                    forwardingTable.put(neighborSubnet, subnetInfo);
                 }
             }
         }
@@ -69,20 +69,20 @@ public class Router {
         DatagramSocket incomingSocket = new DatagramSocket(routerPort);
         DatagramPacket incomingPacket = new DatagramPacket(new byte[1024], 1024);
 
-        flooding(ID, routingTable, nearestNeighbors);
+        floodFrame(ID, routingTable, nearestNeighbors);
         //have a port open and listening
         while (true) {
             incomingSocket.receive(incomingPacket);
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
             String[] frameContents = frame.split(":");
-            System.out.print("Incoming Packet: ");
-            printFrame(frameContents);
             String destinationDeviceID;
 
             if (Objects.equals(frameContents[0], ">")) {
                 System.out.println("Routing packet received");
                 distanceVectorRouting(ID, frameContents, forwardingTable, routingTable, nearestNeighbors);
             } else {
+                System.out.print("Incoming Packet: ");
+                printFrame(frameContents);
                 String[] destinationIP = frameContents[4].split("\\.");
                 String destinationSubnet = destinationIP[0];
                 String sourceSubnet = frameContents[3].split("\\.")[0];
@@ -159,20 +159,36 @@ public class Router {
             String [] newRoutingTableEntry = routingDataPiece.split("=");
             String newTableEntryKey = newRoutingTableEntry[0];
             String newTableEntryValue = newRoutingTableEntry[1];
+            String[] distanceVectorArray = newTableEntryValue.trim().split(",");
             if (!routingTable.containsKey(newTableEntryKey)) {
                 routingTable.put(newTableEntryKey, newTableEntryValue);
-//                for () {
+                // my code isn't usable, but I'm leaving it here anyway
+//                String[] existingTableEntryArray = routingTable.get(ID).split(",");
 //
+//                for (String newVector : distanceVectorArray) {
+//                    String newVectorID = newVector.split("-")[0];
+//                    int newVectorCost = Integer.parseInt(newVector.split("-")[1]);
+//                    for (String currentVector : existingTableEntryArray) {
+//                        if (currentVector.contains(newVectorID)) {
+//                            int currentVectorCost = Integer.parseInt(currentVector.split("-")[1]);
+//                            newVectorCost += currentVectorCost;
+//                        }
+//                    }
 //                }
+
                 changed = true;
-            } else {
-
-
+            }
+            else {
+//                String tableEntry = routingTable.get(newTableEntryKey);
+//                for (String vector : distanceVectorArray) {
+//                    String [] vectorArray = vector.split("-");
+//                }
             }
         }
         System.out.println(routingTable);
         if (changed) {
-            flooding(ID, routingTable,nearestNeighbors);
+
+            floodFrame(ID, routingTable,nearestNeighbors);
         }
 
 //        for(String route: routes){
@@ -198,7 +214,7 @@ public class Router {
         return payload.toString();
     }
 
-    public static void flooding(String sourceDeviceID, Map<String, String> routingTable, Map<String, String> nearestNeighbors){
+    public static void floodFrame(String sourceDeviceID, Map<String, String> routingTable, Map<String, String> nearestNeighbors){
         String frame = routingUpdatePacket(sourceDeviceID, routingTable);
         //Check if the port to be flooded is a router
         ArrayList<String> nearestPorts = new ArrayList<>();
