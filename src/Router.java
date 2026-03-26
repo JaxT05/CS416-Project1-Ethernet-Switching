@@ -148,28 +148,25 @@ public class Router {
         }
         return neighborInformation;
     }
-    /*
 
-     */
     public static void distanceVectorRouting (String ID, String[] routingPacketContents, Map<String, String> forwardingTable, Map<String, String> routingTable, Map<String, String> nearestNeighbors){
-        //Router flooding can only send to other routers
-        //Check if the port to be flooded is a router
-        //packet format
         //vector list format => Key: "Subnet" -> Value: "NextHopID,TotalCost"
-//        String[] parts = routingPacket.split(":");
-
         String routingData = routingPacketContents[1];
         String[] routingDataArray = routingData.split(";");
         boolean changed = false;
 
         for(String routingDataPiece : routingDataArray) {
-            String [] routingTableEntry = routingDataPiece.split("=");
-            String tableEntryKey = routingTableEntry[0];
-            String tableEntryValue = routingTableEntry[1];
-            if (!routingTable.containsKey(tableEntryKey)) {
-                routingTable.put(tableEntryKey, tableEntryValue);
+            String [] newRoutingTableEntry = routingDataPiece.split("=");
+            String newTableEntryKey = newRoutingTableEntry[0];
+            String newTableEntryValue = newRoutingTableEntry[1];
+            if (!routingTable.containsKey(newTableEntryKey)) {
+                routingTable.put(newTableEntryKey, newTableEntryValue);
+//                for () {
+//
+//                }
                 changed = true;
             } else {
+
 
             }
         }
@@ -195,22 +192,21 @@ public class Router {
 
     public static String routingUpdatePacket(String ID, Map<String, String> forwardingTable) {
         StringBuilder payload = new StringBuilder(">:");
-
         for (Map.Entry<String, String> entry : forwardingTable.entrySet()) {
             payload.append(entry.getKey()).append("=").append(entry.getValue()).append(";");
         }
-
         return payload.toString();
     }
 
     public static void flooding(String sourceDeviceID, Map<String, String> routingTable, Map<String, String> nearestNeighbors){
-
         String frame = routingUpdatePacket(sourceDeviceID, routingTable);
-
+        //Check if the port to be flooded is a router
         ArrayList<String> nearestPorts = new ArrayList<>();
         for (String neighbor : nearestNeighbors.keySet()) {
-            String neighborConfig = nearestNeighbors.get(neighbor);
-            nearestPorts.add(neighborConfig);
+            if (neighbor.contains("R")) {
+                String neighborConfig = nearestNeighbors.get(neighbor);
+                nearestPorts.add(neighborConfig);
+            }
         }
 
         for (String portInfo: nearestPorts ) {
