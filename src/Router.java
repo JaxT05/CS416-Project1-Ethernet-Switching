@@ -49,10 +49,10 @@ public class Router {
         routerVectors.deleteCharAt(routerVectors.length() - 1);
 //        routerVectors.append(ID).append("-").append(0).append("-local-").append(ID);
         routingTable.put(ID, routerVectors.toString());
-        System.out.println("Routing Table");
-        System.out.println(routingTable);
-        System.out.println("Initial Forwarding Table");
-        System.out.println(forwardingTable);
+//        System.out.println("Routing Table");
+//        System.out.println(routingTable);
+//        System.out.println("Initial Forwarding Table");
+//        System.out.println(forwardingTable);
 
         //open up listening port on this device
 //        InetAddress realIP = InetAddress.getByName(configArray[1]);
@@ -73,7 +73,7 @@ public class Router {
             if (Objects.equals(frameContents[0], ">")) {
 //                System.out.println("Routing packet received");
                 distanceVectorRouting(ID, frameContents, forwardingTable, routingTable, nearestNeighbors);
-                System.out.println(forwardingTable);
+//                System.out.println(forwardingTable);
             } else {
                 System.out.print("Incoming Packet: ");
                 printFrame(frameContents);
@@ -167,7 +167,7 @@ public class Router {
             HashMap<String, String> mainTableVectorInfo = new HashMap<>();
 
             String mainDistanceVectors = routingTable.get(ID);
-            System.out.println(mainDistanceVectors);
+//            System.out.println(mainDistanceVectors);
             String[] mainDistanceVectorArrayInfo = mainDistanceVectors.split(",");
             ArrayList<String> mainDistanceVectorArray = new ArrayList<>();
             for (String vectorArray : mainDistanceVectorArrayInfo) {
@@ -208,7 +208,7 @@ public class Router {
 
                     if (newVectorCost < mainVectorCost) {
                         String newVector = vector + "-" + newVectorCost + "-" + newVectorSubnet + "-" + neighborData;
-                        System.out.println("Running Comparison: " + newVector + " vs " + vector + "-" + mainVectorCost + "-" + mainVectorSubnet + "-" + mainVectorInfoArray[2]);
+//                        System.out.println("Running Comparison: " + newVector + " vs " + vector + "-" + mainVectorCost + "-" + mainVectorSubnet + "-" + mainVectorInfoArray[2]);
                         newTableVectorInfo.put(vector, newVector);
                         mainDistanceVectorArray.removeIf(mainDistanceVector -> mainDistanceVector.contains(vector));
 //                        System.out.println(mainDistanceVectorArray);
@@ -224,7 +224,7 @@ public class Router {
                         changed = true;
                     }
                 } else {
-                    System.out.println("Adding Vector: ");
+//                    System.out.println("Adding Vector: ");
                     String newVectorInfo = newTableVectorInfo.get(vector);
                     String[] newVectorInfoArray = newVectorInfo.split(" ");
                     int newVectorCost = Integer.parseInt(newVectorInfoArray[0]) + 1;
@@ -232,13 +232,13 @@ public class Router {
                     String newVector = "," + vector + "-" + newVectorCost + "-" + newVectorSubnet + "-" + neighborData;
                     mainDistanceVectors = mainDistanceVectors.concat(newVector);
                     routingTable.put(ID, mainDistanceVectors);
-                    System.out.println(routingTable.get(ID));
+//                    System.out.println(routingTable.get(ID));
                     changed = true;
                 }
             }
         }
         if (changed) {
-            System.out.println("changed");
+//            System.out.println("changed");
             //change forwarding table
             String tableConfig = routingTable.get(ID);
             HashMap<String, String> routingTableMap = new HashMap<>();
@@ -271,7 +271,7 @@ public class Router {
                         }
                     }
             }
-            System.out.println("Sending packet.");
+//            System.out.println("Sending packet.");
             floodFrame(ID, routingTable,nearestNeighbors);
         }
     }
