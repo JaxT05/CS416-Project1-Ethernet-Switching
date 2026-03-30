@@ -20,7 +20,6 @@ public class Router {
         Algorithm checks whether neighbor ID has the same port subnet.
         If true neighbor and source must share wire and will use that to reach destination
          */
-
         // Forwarding table ("Destination subnet", "Next Hop ID")
         String allDevicesConfig = configArray[0];
         String[] deviceBlocks = allDevicesConfig.split(" ");
@@ -41,35 +40,30 @@ public class Router {
                     forwardingTable.put(neighborSubnet, subnetInfo);
 
                     int cost = 1;
-
                     String routerVectorInfo = neighborID + "-" + cost + "-" + neighborSubnet + "-" + neighborID;
-                    routerVectors.append(routerVectorInfo).append(",");
-                    break;
+                    routerVectors.append(routerVectorInfo);
+                    routerVectors.append(",");
                 }
             }
         }
-
-        routerVectors.append(ID).append("-").append(0).append("-local-").append(ID);
+        routerVectors.deleteCharAt(routerVectors.length() - 1);
+//        routerVectors.append(ID).append("-").append(0).append("-local-").append(ID);
         routingTable.put(ID, routerVectors.toString());
-//        System.out.println("Routing Table");
-//        System.out.println(routingTable);
-//        System.out.println("Initial Forwarding Table");
-//        System.out.println(forwardingTable);
+        System.out.println("Routing Table");
+        System.out.println(routingTable);
+        System.out.println("Initial Forwarding Table");
+        System.out.println(forwardingTable);
 
-        ArrayList<String> nearestPorts = new ArrayList<>();
-        for (String neighbor : nearestNeighbors.keySet()) {
-            String neighborConfig = nearestNeighbors.get(neighbor);
-            nearestPorts.add(neighborConfig);
-        }
-
-        InetAddress realIP = InetAddress.getByName(configArray[1]);
+        //open up listening port on this device
+//        InetAddress realIP = InetAddress.getByName(configArray[1]);
         int routerPort = Integer.parseInt(configArray[2]);
 
         DatagramSocket incomingSocket = new DatagramSocket(routerPort);
         DatagramPacket incomingPacket = new DatagramPacket(new byte[1024], 1024);
 
+        //send out initial routing table
         floodFrame(ID, routingTable, nearestNeighbors);
-        //have a port open and listening
+
         while (true) {
             incomingSocket.receive(incomingPacket);
             String frame = new String(incomingPacket.getData(), 0, incomingPacket.getLength()).trim();
@@ -79,7 +73,7 @@ public class Router {
             if (Objects.equals(frameContents[0], ">")) {
 //                System.out.println("Routing packet received");
                 distanceVectorRouting(ID, frameContents, forwardingTable, routingTable, nearestNeighbors);
-//                System.out.println(forwardingTable);
+                System.out.println(forwardingTable);
             } else {
                 System.out.print("Incoming Packet: ");
                 printFrame(frameContents);
@@ -104,7 +98,7 @@ public class Router {
                         System.out.println();
                     }
                 } else {
-                    System.out.printf("Frame ignored.\n\n");
+                    System.out.print("Frame ignored.\n\n");
                 }
             }
         }
@@ -173,7 +167,12 @@ public class Router {
             HashMap<String, String> mainTableVectorInfo = new HashMap<>();
 
             String mainDistanceVectors = routingTable.get(ID);
-            String[] mainDistanceVectorArray = mainDistanceVectors.split(",");
+            System.out.println(mainDistanceVectors);
+            String[] mainDistanceVectorArrayInfo = mainDistanceVectors.split(",");
+            ArrayList<String> mainDistanceVectorArray = new ArrayList<>();
+            for (String vectorArray : mainDistanceVectorArrayInfo) {
+                mainDistanceVectorArray.add(vectorArray);
+            }
             for (String mainVectorInfo : mainDistanceVectorArray) {
                 String[] entryArray = mainVectorInfo.split("-");
                 String vectorID = entryArray[0];
@@ -190,27 +189,42 @@ public class Router {
                 String vectorNextHop = entryArray[3];
                 newTableVectorInfo.put(vectorID, vectorCost + " " + vectorSubnet + " " + vectorNextHop);
             }
-//            System.out.println(newTableVectorInfo);
-//            System.out.println(mainTableVectorInfo);
             if (newTableVectorInfo.containsKey(ID)) {
                 newTableVectorInfo.remove(ID);
             }
             for (String vector : newTableVectorInfo.keySet()) {
+
                 if (mainTableVectorInfo.containsKey(vector)) {
+//                    System.out.println(vector + ":" + mainTableVectorInfo.get(vector));
                     String newVectorInfo = newTableVectorInfo.get(vector);
                     String[] newVectorInfoArray = newVectorInfo.split(" ");
-                    int newVectorCost = Integer.parseInt(newVectorInfoArray[0]) + 1;
+                    int newVectorCost = Integer.parseInt(newVectorInfoArray[0]) + 3;
                     String newVectorSubnet = newVectorInfoArray[1];
+
                     String mainVectorInfo = mainTableVectorInfo.get(vector);
-                    String[] mainVectorInfoArray = newVectorInfo.split(" ");
-                    int mainVectorCost = Integer.parseInt(mainVectorInfoArray[0]) + 1;
-                    String mainVectorSubnet = newVectorInfoArray[1];
+                    String[] mainVectorInfoArray = mainVectorInfo.split(" ");
+                    int mainVectorCost = Integer.parseInt(mainVectorInfoArray[0]);
+                    String mainVectorSubnet = mainVectorInfoArray[1];
+
                     if (newVectorCost < mainVectorCost) {
-                        String newVector = "," + vector + "-" + newVectorCost + "-" + newVectorSubnet + "-" + neighborData;
+                        String newVector = vector + "-" + newVectorCost + "-" + newVectorSubnet + "-" + neighborData;
+                        System.out.println("Running Comparison: " + newVector + " vs " + vector + "-" + mainVectorCost + "-" + mainVectorSubnet + "-" + mainVectorInfoArray[2]);
+                        newTableVectorInfo.put(vector, newVector);
+                        mainDistanceVectorArray.removeIf(mainDistanceVector -> mainDistanceVector.contains(vector));
+//                        System.out.println(mainDistanceVectorArray);
+                        mainDistanceVectorArray.add(newVector);
+                        StringBuilder newMainDistanceVector = new StringBuilder();
+                        for (String vectorArray : mainDistanceVectorArray) {
+                            newMainDistanceVector.append(vectorArray).append(",");
+                        }
+                        newMainDistanceVector.deleteCharAt(newMainDistanceVector.length() - 1);
+//                        System.out.println(newMainDistanceVector);
+//                        routingTable.put(ID, newMainDistanceVector.toString());
+//                        System.out.println(routingTable.get(ID));
                         changed = true;
                     }
-                }
-                else {
+                } else {
+                    System.out.println("Adding Vector: ");
                     String newVectorInfo = newTableVectorInfo.get(vector);
                     String[] newVectorInfoArray = newVectorInfo.split(" ");
                     int newVectorCost = Integer.parseInt(newVectorInfoArray[0]) + 1;
@@ -218,17 +232,20 @@ public class Router {
                     String newVector = "," + vector + "-" + newVectorCost + "-" + newVectorSubnet + "-" + neighborData;
                     mainDistanceVectors = mainDistanceVectors.concat(newVector);
                     routingTable.put(ID, mainDistanceVectors);
+                    System.out.println(routingTable.get(ID));
                     changed = true;
                 }
             }
         }
         if (changed) {
+            System.out.println("changed");
             //change forwarding table
             String tableConfig = routingTable.get(ID);
             HashMap<String, String> routingTableMap = new HashMap<>();
             String[] tableConfigArray = tableConfig.split(",");
             for (String tableConfigInfo : tableConfigArray) {
                 String[] entryArray = tableConfigInfo.split("-");
+//                System.out.println(Arrays.toString(entryArray));
                 String vectorID = entryArray[0];
                 int vectorCost = Integer.parseInt(entryArray[1]);
                 String vectorSubnet = entryArray[2];
@@ -249,14 +266,12 @@ public class Router {
                                 nextHopSubnet = id;
                             }
                         }
-                        if (vector!= nextHop) {
+                        if (!Objects.equals(vector, nextHop)) {
                             forwardingTable.put(subnet, nextHopSubnet + "." + nextHop);
                         }
                     }
-
-
             }
-//            System.out.println(routingTable.get(ID));
+            System.out.println("Sending packet.");
             floodFrame(ID, routingTable,nearestNeighbors);
         }
     }
